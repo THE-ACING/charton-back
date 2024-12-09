@@ -86,11 +86,14 @@ for message in consumer:
             ctx = {
                 "outtmpl": "-",
                 "cookiefile": "/cookies.txt",
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '0',
-                }],
+                'verbose': True,
+                'extract_audio': True,
+                'format': 'bestaudio',
+                # 'postprocessors': [{
+                #     'key': 'FFmpegExtractAudio',
+                #     'preferredcodec': 'mp3',
+                #     'preferredquality': '0',
+                # }],
                 'logtostderr': True
             }
 
@@ -99,16 +102,13 @@ for message in consumer:
                 ydl.download(urls)
 
             file_version = tracks_bucket.upload_bytes(buffer.getvalue(), f"{result['name']}.mp3")
-            track = {
-                "title": result['name'],
-                "author_id": author.id,
-                "duration": result['duration_ms'] // 1000,
-                "source": tracks_bucket.get_download_url(file_version.file_name),
-                "thumbnail": result['album']['images'][0]['url']
-            }
-            logfire.info(f"Creating track: {track}", track=track)
             track_repository.create(Track(author_id=author.id, spotify_id=result['id']))
-            logfire.info(track=track)
-            new_track = track_service.CreateTrack(CreateTrackRequest(**track))
+            new_track = track_service.CreateTrack(CreateTrackRequest(
+                title=result['name'],
+                author_id=str(author.id),
+                duration=result['duration_ms'] // 1000,
+                source=tracks_bucket.get_download_url(file_version.file_name),
+                thumbnail=result['album']['images'][0]['url']
+            ))
             logfire.info(f"Created track: {new_track}", new_track=new_track)
             session.commit()
