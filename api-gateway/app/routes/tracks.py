@@ -1,6 +1,5 @@
 from uuid import UUID
 
-import logfire
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter

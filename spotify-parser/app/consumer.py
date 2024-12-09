@@ -6,10 +6,8 @@ from contextlib import redirect_stdout
 import logfire
 from b2sdk.v2 import B2Api, InMemoryAccountInfo
 from kafka import KafkaConsumer
-
-from opentelemetry.instrumentation.kafka import KafkaInstrumentor
-from spotipy import Spotify, SpotifyClientCredentials
 from spotdl import Spotdl, Song
+from spotipy import Spotify, SpotifyClientCredentials
 from yt_dlp import YoutubeDL
 
 from app.database import session_maker, engine
@@ -20,16 +18,11 @@ from app.settings import settings
 from app.stub import track_service
 from services.track.track_pb2 import CreateAuthorRequest, CreateTrackRequest
 
-instance = logfire.configure(service_name="youtube-parser")
+instance = logfire.configure(service_name="spotify-parser")
 logging.basicConfig(level=logging.INFO, handlers=[logfire.LogfireLoggingHandler()])
 logfire.instrument_requests()
 logfire.instrument_sqlalchemy(engine=engine)
 logfire.instrument_psycopg()
-KafkaInstrumentor().instrument(
-    tracer_provider=instance.config.get_tracer_provider(),
-    meter_provider=instance.config.get_meter_provider()
-)
-
 
 consumer = KafkaConsumer(
     settings.KAFKA_TOPIC,
@@ -53,7 +46,6 @@ spotdl = Spotdl(
     no_cache=True
 )
 
-# Consume messages from the topic
 for message in consumer:
     query = message.value.get('query')
     if query is None:
@@ -92,6 +84,7 @@ for message in consumer:
 
             ctx = {
                 "outtmpl": "-",
+                "cookiefile": "/cookies.txt",
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -105,7 +98,6 @@ for message in consumer:
                 ydl.download(urls)
 
             file_version = tracks_bucket.upload_bytes(buffer.getvalue(), f"{result['name']}.mp3")
-            print(tracks_bucket.get_download_url(file_version.file_name))
             track = {
                 "title": result['name'],
                 "author_id": author.id,

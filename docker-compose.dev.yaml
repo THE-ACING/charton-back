@@ -60,6 +60,9 @@ services:
         condition: service_started
     env_file:
       - .env
+    volumes:
+      - ./yt-dlp.conf:/etc/yt-dlp.conf:ro
+      - ./cookies.txt:/cookies.txt
     develop:
       watch:
         - action: sync+restart
@@ -143,45 +146,6 @@ services:
       - "9300:9300"
     volumes:
       - es-data:/usr/share/elasticsearch/data
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:8.16.0
-#    container_name: kibana
-#    restart: on-failure
-#    depends_on:
-#      elasticsearch:
-#        condition: service_healthy
-#    ports:
-#      - "5601:5601"
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#      - XPACK_MONITORING_ENABLED=false
-#  debezium:
-#    image: debezium/connect:3.0.0.Final
-#    restart: always
-#    container_name: debezium
-#    hostname: debezium
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      kafka:
-#        condition: service_healthy
-#    ports:
-#      - '8083:8083'
-#    environment:
-#      BOOTSTRAP_SERVERS: kafka:29092
-#      GROUP_ID: 1
-#      CONFIG_STORAGE_TOPIC: connect_configs
-#      STATUS_STORAGE_TOPIC: connect_statuses
-#      OFFSET_STORAGE_TOPIC: connect_offsets
-#      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-#      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-#      ENABLE_DEBEZIUM_SCRIPTING: 'true'
-#    healthcheck:
-#      test: [ 'CMD', 'curl --silent --fail -X GET http://localhost:8083/connectors' ]
-#      start_period: 10s
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
   redis:
     image: 'redis:alpine'
     container_name: redis
