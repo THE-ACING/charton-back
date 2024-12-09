@@ -1,0 +1,222 @@
+services:
+  api-gateway:
+    image: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: on-failure
+    depends_on:
+      - track-service
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./api-gateway/app
+          target: /app
+        - action: rebuild
+          path: ./api-gateway/requirements.lock
+        - action: rebuild
+          path: ./api-gateway/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+  track-service:
+    image: track-service
+    build:
+      context: ./track-service
+      dockerfile: Dockerfile
+    container_name: track-service
+    restart: on-failure
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "50051:50051"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./track-service/app
+          target: /app
+        - action: rebuild
+          path: ./track-service/requirements.lock
+        - action: rebuild
+          path: ./track-service/Dockerfile
+  spotify-parser:
+    image: spotify-parser
+    build:
+      context: spotify-parser
+      dockerfile: Dockerfile
+    container_name: spotify-parser
+    restart: on-failure
+    depends_on:
+      kafka:
+        condition: service_healthy
+      track-service:
+        condition: service_started
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./spotify-parser/app
+          target: /app
+        - action: rebuild
+          path: ./spotify-parser/requirements.lock
+        - action: rebuild
+          path: ./spotify-parser/Dockerfile
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: on-failure
+    healthcheck:
+      test: echo srvr | nc zookeeper 2181 || exit 1
+      start_period: 10s
+      retries: 20
+      interval: 10s
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    restart: on-failure
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    # command: ['postgres', '-c', 'wal_level=logical']
+    restart: on-failure
+    user: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    container_name: elasticsearch
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xmx2g -Xms2g
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.16.0
+#    container_name: kibana
+#    restart: on-failure
+#    depends_on:
+#      elasticsearch:
+#        condition: service_healthy
+#    ports:
+#      - "5601:5601"
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - XPACK_MONITORING_ENABLED=false
+#  debezium:
+#    image: debezium/connect:3.0.0.Final
+#    restart: always
+#    container_name: debezium
+#    hostname: debezium
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      kafka:
+#        condition: service_healthy
+#    ports:
+#      - '8083:8083'
+#    environment:
+#      BOOTSTRAP_SERVERS: kafka:29092
+#      GROUP_ID: 1
+#      CONFIG_STORAGE_TOPIC: connect_configs
+#      STATUS_STORAGE_TOPIC: connect_statuses
+#      OFFSET_STORAGE_TOPIC: connect_offsets
+#      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+#      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+#      ENABLE_DEBEZIUM_SCRIPTING: 'true'
+#    healthcheck:
+#      test: [ 'CMD', 'curl --silent --fail -X GET http://localhost:8083/connectors' ]
+#      start_period: 10s
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+  redis:
+    image: 'redis:alpine'
+    container_name: redis
+    ports:
+      - '6379:6379'
+  pgsync:
+    image: pgsync
+    build:
+      context: pgsync
+      dockerfile: Dockerfile
+    container_name: pgsync
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - PG_USER=postgres
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_PASSWORD=postgres
+      - LOG_LEVEL=INFO
+      - ELASTICSEARCH_PORT=9200
+      - ELASTICSEARCH_SCHEME=http
+      - ELASTICSEARCH_HOST=elasticsearch
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH=true
+      - LOG_INTERVAL=10
+
+
+volumes:
+  db-data:
+    driver: local
+  es-data:
+    driver: local

@@ -1,0 +1,37 @@
+[project]
+name = "spotify-parser"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Kulunchick", email = "nikolikrasovski@gmail.com" }
+]
+dependencies = [
+    "b2sdk>=2.6.0",
+    "grpcio>=1.67.1",
+    "grpcio-tools>=1.67.1",
+    "pydantic-settings>=2.6.1",
+    "logfire[requests,sqlalchemy,psycopg]>=2.3.0",
+    "opentelemetry-instrumentation-kafka-python>=0.49b1",
+    "kafka-python @ git+https://github.com/dpkp/kafka-python",
+    "sqlalchemy[postgresql-psycopgbinary]>=2.0.36",
+    "alembic>=1.14.0",
+    "spotdl>=4.2.10",
+    "uuid7>=0.1.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+virtual = true
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

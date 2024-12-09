@@ -1,0 +1,66 @@
+from google.protobuf.internal import containers as _containers
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
+
+DESCRIPTOR: _descriptor.FileDescriptor
+
+class CreateTrackRequest(_message.Message):
+    __slots__ = ("title", "author", "duration", "source", "thumbnail")
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    AUTHOR_FIELD_NUMBER: _ClassVar[int]
+    DURATION_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    THUMBNAIL_FIELD_NUMBER: _ClassVar[int]
+    title: str
+    author: str
+    duration: int
+    source: str
+    thumbnail: str
+    def __init__(self, title: _Optional[str] = ..., author: _Optional[str] = ..., duration: _Optional[int] = ..., source: _Optional[str] = ..., thumbnail: _Optional[str] = ...) -> None: ...
+
+class TrackRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class TrackResponse(_message.Message):
+    __slots__ = ("id", "title", "author", "duration", "source", "thumbnail")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    AUTHOR_FIELD_NUMBER: _ClassVar[int]
+    DURATION_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    THUMBNAIL_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    title: str
+    author: str
+    duration: int
+    source: str
+    thumbnail: str
+    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., author: _Optional[str] = ..., duration: _Optional[int] = ..., source: _Optional[str] = ..., thumbnail: _Optional[str] = ...) -> None: ...
+
+class TracksRequest(_message.Message):
+    __slots__ = ("limit", "offset")
+    LIMIT_FIELD_NUMBER: _ClassVar[int]
+    OFFSET_FIELD_NUMBER: _ClassVar[int]
+    limit: int
+    offset: int
+    def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
+
+class TracksResponse(_message.Message):
+    __slots__ = ("tracks",)
+    TRACKS_FIELD_NUMBER: _ClassVar[int]
+    tracks: _containers.RepeatedCompositeFieldContainer[TrackResponse]
+    def __init__(self, tracks: _Optional[_Iterable[_Union[TrackResponse, _Mapping]]] = ...) -> None: ...
+
+class SearchRequest(_message.Message):
+    __slots__ = ("query", "limit", "offset")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    LIMIT_FIELD_NUMBER: _ClassVar[int]
+    OFFSET_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    limit: int
+    offset: int
+    def __init__(self, query: _Optional[str] = ..., limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...

@@ -1,0 +1,18 @@
+from dishka import provide, Provider, Scope
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    TRACK_SERVICE_GRPC_HOST: str
+    TRACK_SERVICE_GRPC_PORT: int
+
+    model_config = SettingsConfigDict(
+        env_file=('stack.env', '.env'),
+        extra="ignore"
+    )
+
+
+class SettingsProvider(Provider):
+    @provide(scope=Scope.APP)
+    def get_settings(self) -> Settings:
+        return Settings()

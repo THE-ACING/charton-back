@@ -1,0 +1,27 @@
+[
+  {
+    "database": "track_service",
+    "index": "tracks",
+    "nodes": {
+      "table": "tracks",
+      "schema": "public",
+      "columns": [
+        "id",
+        "title"
+      ],
+      "children": [
+        {
+          "table": "authors",
+          "columns": [
+            "name",
+            "genres"
+          ],
+          "relationship": {
+              "variant": "object",
+              "type": "one_to_one"
+          }
+        }
+      ]
+    }
+  }
+]
