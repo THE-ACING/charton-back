@@ -74,6 +74,7 @@ for message in consumer:
                     spotify_id=result['artists'][0]['id'])
                 )
                 session.commit()
+            logfire.info(f"Author: {author}", author=author)
 
             song = Song.from_url(result['external_urls']['spotify'])
             urls = spotdl.get_download_urls([song])
@@ -105,6 +106,7 @@ for message in consumer:
                 "source": tracks_bucket.get_download_url(file_version.file_name),
                 "thumbnail": result['album']['images'][0]['url']
             }
+            logfire.info(f"Creating track: {track}", track=track)
             track_repository.create(Track(author_id=author.id, spotify_id=result['id']))
             logfire.info(track=track)
             new_track = track_service.CreateTrack(CreateTrackRequest(**track))
