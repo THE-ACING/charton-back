@@ -71,8 +71,8 @@ for message in consumer:
                 ))
                 author = author_repository.create(Author(
                     id=new_author.id,
-                    spotify_id=result['artists'][0]['id'])
-                )
+                    spotify_id=result['artists'][0]['id']
+                ))
                 session.commit()
             logfire.info(f"Author: {author}", author=author)
 

@@ -13,17 +13,34 @@ class TrackElasticsearchRepository:
         return await self.__es.search(
             index=self._index,
             body={
-              "query": {
-                "multi_match": {
-                  "query": query,
-                  "fields": [
-                    "title^3",
-                    "authors.name^2",
-                    "authors.genres^1"
-                  ],
-                  "fuzziness": "AUTO"
-                }
-              }
+                "query": {
+                    "bool": {
+                        "should": [
+                            {
+                                "multi_match": {
+                                    "query": query,
+                                    "fields": [
+                                        "title^3",
+                                        "authors.name^2",
+                                        "authors.genres^1"
+                                    ],
+                                    "fuzziness": "AUTO"
+                                }
+                            },
+                            {
+                                "multi_match": {
+                                    "query": query,
+                                    "fields": [
+                                        "title.keyword^10",
+                                        "authors.name.keyword^8",
+                                        "authors.genres.keyword^6"
+                                    ],
+                                    "type": "phrase"
+                                }
+                            }
+                        ]
+                    }
+                },
             },
             from_=from_,
             size=size
@@ -32,5 +49,6 @@ class TrackElasticsearchRepository:
 
 class TrackElasticsearchProvider(Provider):
     @provide(scope=Scope.REQUEST)
-    def get_track_elasticsearch_repository(self, es: AsyncElasticsearch, settings: Settings) -> TrackElasticsearchRepository:
+    def get_track_elasticsearch_repository(self, es: AsyncElasticsearch,
+                                           settings: Settings) -> TrackElasticsearchRepository:
         return TrackElasticsearchRepository(es, settings.ELASTICSEARCH_INDEX)

@@ -119,7 +119,11 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
             }
         )
         resp = await track_elasticsearch_repository.search(request.query, request.offset, request.limit)
+        track_ids_order = {UUID(hit["_id"]): index for index, hit in enumerate(resp["hits"]["hits"])}
+
         tracks = await track_repository.find(Track.id.in_(UUID(hit["_id"]) for hit in resp["hits"]["hits"]), options=[selectinload(Track.author)])
+        tracks = sorted(tracks, key=lambda track: track_ids_order[track.id])
+
         return track_pb2.TracksResponse(
             tracks=[track_pb2.TrackResponse(
                 id=str(track.id),
