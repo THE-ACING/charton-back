@@ -2,6 +2,7 @@ import io
 import json
 import logging
 from contextlib import redirect_stdout
+from time import sleep
 
 import logfire
 from b2sdk.v2 import B2Api, InMemoryAccountInfo
@@ -48,7 +49,7 @@ spotdl = Spotdl(
 
 for message in consumer:
     query = message.value.get('query')
-    if query is None:
+    if not query:
         continue
 
     search_results = sp.search(query, type='track', limit=3)
@@ -63,18 +64,22 @@ for message in consumer:
                 logfire.info(f"Track already exists: {result['name']}")
                 continue
 
-            author = author_repository.find_one(Author.spotify_id == result['artists'][0]['id'])
-            if not author:
-                new_author = track_service.CreateAuthor(CreateAuthorRequest(
-                    name=result['artists'][0]['name'],
-                    genres=''
-                ))
-                author = author_repository.create(Author(
-                    id=new_author.id,
-                    spotify_id=result['artists'][0]['id']
-                ))
-                session.commit()
-            logfire.info(f"Author: {author}", author=author)
+            authors = []
+            for artist in result['artists']:
+                author = author_repository.find_one(Author.spotify_id == artist['id'])
+                if not author:
+                    sp_artist = sp.artist(f"spotify:artist:{artist['id']}")
+                    logfire.info(f"Creating author: {artist['name']}", sp_artist=sp_artist)
+                    new_author = track_service.CreateAuthor(CreateAuthorRequest(
+                        name=artist['name'],
+                        genres=",".join(sp_artist.get('genres', []))
+                    ))
+                    author = author_repository.create(Author(
+                        id=new_author.id,
+                        spotify_id=artist['id']
+                    ))
+                    session.commit()
+                authors.append(author)
 
             song = Song.from_url(result['external_urls']['spotify'])
             urls = spotdl.get_download_urls([song])
@@ -86,29 +91,46 @@ for message in consumer:
             ctx = {
                 "outtmpl": "-",
                 "cookiefile": "/cookies.txt",
-                'verbose': True,
                 'extract_audio': True,
                 'format': 'bestaudio',
-                # 'postprocessors': [{
-                #     'key': 'FFmpegExtractAudio',
-                #     'preferredcodec': 'mp3',
-                #     'preferredquality': '0',
-                # }],
+                'postprocessors': [
+                    {
+                        'key': 'FFmpegMetadata',
+                        'add_metadata': True,
+                    },
+                    {
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '0',
+                    },
+                ],
+                'extractor_args': {
+                    'youtube': {
+                        'player-client': ['web', 'default'],
+                        'po_token': [f'web+{settings.PO_TOKEN.get_secret_value()}'],
+                    },
+                },
                 'logtostderr': True
             }
+
+            # with YoutubeDL() as ydl:
+            #     info_dict = ydl.extract_info(urls[0], download=False)
+            #     formats = info_dict.get('formats', [])
+            #     logfire.info(f"Formats: {formats}", formats=formats)
 
             buffer = io.BytesIO()
             with redirect_stdout(buffer), YoutubeDL(ctx) as ydl:
                 ydl.download(urls)
 
-            file_version = tracks_bucket.upload_bytes(buffer.getvalue(), f"{result['name']}.mp3")
+            file_version = tracks_bucket.upload_bytes(buffer.getvalue(), f"{result['id']}.mp3")
             track_repository.create(Track(author_id=author.id, spotify_id=result['id']))
             new_track = track_service.CreateTrack(CreateTrackRequest(
                 title=result['name'],
-                author_id=str(author.id),
+                author_ids=[str(author.id) for author in authors],
                 duration=result['duration_ms'] // 1000,
                 source=tracks_bucket.get_download_url(file_version.file_name),
                 thumbnail=result['album']['images'][0]['url']
             ))
             logfire.info(f"Created track: {new_track}", new_track=new_track)
             session.commit()
+    sleep(5)

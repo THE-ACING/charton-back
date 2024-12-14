@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     B2_APPLICATION_KEY: str
     B2_TRACK_BUCKET_NAME: str
 
+    PO_TOKEN: SecretStr
 
     model_config = SettingsConfigDict(
         env_file=('stack.env', '.env'),

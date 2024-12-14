@@ -61,7 +61,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./yt-dlp.conf:/etc/yt-dlp.conf:ro
+#      - ./yt-dlp.conf:/etc/yt-dlp.conf:ro
       - ./cookies.txt:/cookies.txt
     develop:
       watch:

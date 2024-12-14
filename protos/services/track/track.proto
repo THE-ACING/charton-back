@@ -19,7 +19,7 @@ message Author {
 
 message CreateTrackRequest {
   string title = 1;
-  string author_id = 2;
+  repeated string author_ids = 2;
   uint32 duration = 3;
   string source = 4;
   string thumbnail = 5;
@@ -32,7 +32,7 @@ message TrackRequest {
 message TrackResponse {
   string id = 1;
   string title = 2;
-  Author author = 3;
+  repeated Author authors = 3;
   uint32 duration = 4;
   string source = 5;
   string thumbnail = 6;

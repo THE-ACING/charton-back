@@ -13,12 +13,16 @@
         {
           "table": "authors",
           "columns": [
+            "id",
             "name",
             "genres"
           ],
           "relationship": {
-              "variant": "object",
-              "type": "one_to_one"
+            "type": "one_to_many",
+            "variant": "object",
+            "through_tables": [
+                "track_authors"
+            ]
           }
         }
       ]

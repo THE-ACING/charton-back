@@ -211,7 +211,7 @@ wrapt==1.16.0
     # via opentelemetry-instrumentation
     # via opentelemetry-instrumentation-dbapi
     # via opentelemetry-instrumentation-sqlalchemy
-yt-dlp==2024.11.18
+yt-dlp==2024.12.13
     # via spotdl
 ytmusicapi==1.8.2
     # via spotdl

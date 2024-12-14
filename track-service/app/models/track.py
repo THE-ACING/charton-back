@@ -1,8 +1,6 @@
-from typing import TYPE_CHECKING
-from uuid import UUID
+from typing import TYPE_CHECKING, List
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy.orm import Mapped, relationship
 
 from app.models.base import Base, TimestampMixin
 if TYPE_CHECKING:
@@ -13,8 +11,7 @@ class Track(TimestampMixin, Base):
     __tablename__ = "tracks"
 
     title: Mapped[str]
-    author_id: Mapped[UUID] = mapped_column(ForeignKey("authors.id"))
-    author: Mapped['Author'] = relationship(back_populates="tracks")
+    authors: Mapped[List['Author']] = relationship(secondary="track_authors", back_populates="tracks")
     duration: Mapped[int]
     source: Mapped[str]
     thumbnail: Mapped[str]

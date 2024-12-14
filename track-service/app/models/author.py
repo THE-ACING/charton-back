@@ -14,4 +14,4 @@ class Author(TimestampMixin, Base):
 
     name: Mapped[str]
     genres: Mapped[str]
-    tracks: Mapped[List['Track']] = relationship(back_populates='author')
+    tracks: Mapped[List['Track']] = relationship(secondary="track_authors", back_populates='authors')

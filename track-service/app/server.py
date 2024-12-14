@@ -42,12 +42,16 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
 
     @inject
     async def CreateTrack(self, request: track_pb2.CreateTrackRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository], author_repository: FromDishka[AuthorRepository], session: FromDishka[AsyncSession]) -> track_pb2.TrackResponse:
-        author = await author_repository.get(UUID(request.author_id))
-        if author is None:
-            raise NotFound("Author not found")
+        authors = []
+        for author_id in request.author_ids:
+            author = await author_repository.get(UUID(author_id))
+            if author is None:
+                raise NotFound("Author not found")
+            authors.append(author)
+
         track = await track_repository.create(Track(
             title=request.title,
-            author_id=UUID(request.author_id),
+            authors=authors,
             duration=request.duration,
             source=request.source,
             thumbnail=request.thumbnail,
@@ -56,11 +60,11 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
         return track_pb2.TrackResponse(
             id=str(track.id),
             title=track.title,
-            author=track_pb2.Author(
+            authors=[track_pb2.Author(
                 id=str(author.id),
                 name=author.name,
                 genres=author.genres
-            ),
+            ) for author in track.authors],
             duration=track.duration,
             source=track.source,
             thumbnail=track.thumbnail
@@ -68,17 +72,17 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
 
     @inject
     async def GetTrack(self, request: track_pb2.TrackRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TrackResponse:
-        track = await track_repository.get(UUID(request.id), options=[selectinload(Track.author)])
+        track = await track_repository.get(UUID(request.id), options=[selectinload(Track.authors)])
         if track is None:
             raise NotFound("Track not found")
         return track_pb2.TrackResponse(
             id=str(track.id),
             title=track.title,
-            author=track_pb2.Author(
-                id=str(track.author.id),
-                name=track.author.name,
-                genres=track.author.genres
-            ),
+            authors=[track_pb2.Author(
+                id=str(author.id),
+                name=author.name,
+                genres=author.genres
+            ) for author in track.authors],
             duration=track.duration,
             source=track.source,
             thumbnail=track.thumbnail
@@ -86,16 +90,16 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
 
     @inject
     async def GetTracks(self, request: track_pb2.TracksRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TracksResponse:
-        tracks = await track_repository.find(limit=request.limit, offset=request.offset, options=[selectinload(Track.author)])
+        tracks = await track_repository.find(limit=request.limit, offset=request.offset, options=[selectinload(Track.authors)])
         return track_pb2.TracksResponse(
             tracks=[track_pb2.TrackResponse(
                 id=str(track.id),
                 title=track.title,
-                author=track_pb2.Author(
-                    id=str(track.author.id),
-                    name=track.author.name,
-                    genres=track.author.genres
-                ),
+                authors=[track_pb2.Author(
+                    id=str(author.id),
+                    name=author.name,
+                    genres=author.genres
+                ) for author in track.authors],
                 duration=track.duration,
                 source=track.source,
                 thumbnail=track.thumbnail
@@ -121,18 +125,18 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
         resp = await track_elasticsearch_repository.search(request.query, request.offset, request.limit)
         track_ids_order = {UUID(hit["_id"]): index for index, hit in enumerate(resp["hits"]["hits"])}
 
-        tracks = await track_repository.find(Track.id.in_(UUID(hit["_id"]) for hit in resp["hits"]["hits"]), options=[selectinload(Track.author)])
+        tracks = await track_repository.find(Track.id.in_(UUID(hit["_id"]) for hit in resp["hits"]["hits"]), options=[selectinload(Track.authors)])
         tracks = sorted(tracks, key=lambda track: track_ids_order[track.id])
 
         return track_pb2.TracksResponse(
             tracks=[track_pb2.TrackResponse(
                 id=str(track.id),
                 title=track.title,
-                author=track_pb2.Author(
-                    id=str(track.author.id),
-                    name=track.author.name,
-                    genres=track.author.genres
-                ),
+                authors=[track_pb2.Author(
+                    id=str(author.id),
+                    name=author.name,
+                    genres=author.genres
+                ) for author in track.authors],
                 duration=track.duration,
                 source=track.source,
                 thumbnail=track.thumbnail
