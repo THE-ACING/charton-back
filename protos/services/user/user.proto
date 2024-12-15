@@ -5,8 +5,7 @@ package user;
 service User {
   rpc GetUser(UserRequest) returns (UserResponse) {}
   rpc CreateUser(CreateUserRequest) returns (UserResponse) {}
-  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {}
-  rpc RemoveUser(UserRequest) returns (UserResponse) {}
+  rpc DeleteUser(UserRequest) returns (UserResponse) {}
 
   rpc GetUsers(UsersRequest) returns (UsersResponse) {}
 }
@@ -15,27 +14,10 @@ message UserRequest {
   string id = 1;
 }
 
-message CreateUserRequest {
-  optional string first_name = 1;
-  optional string last_name = 2;
-  optional string username = 3;
-  optional string avatar = 4;
-}
-
-message UpdateUserRequest {
-  string id = 1;
-  optional string first_name = 2;
-  optional string last_name = 3;
-  optional string username = 4;
-  optional string avatar = 5;
-}
+message CreateUserRequest { }
 
 message UserResponse {
   string id = 1;
-  optional string first_name = 2;
-  optional string last_name = 3;
-  optional string username = 4;
-  optional string avatar = 5;
 }
 
 message UsersRequest {

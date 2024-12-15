@@ -12,10 +12,10 @@ dependencies = [
     "grpcio-health-checking>=1.68.0",
     "sqlalchemy[postgresql-asyncpg]>=2.0.36",
     "alembic>=1.14.0",
-    "uuid7>=0.1.0",
     "pydantic-settings>=2.6.1",
     "logfire[asyncpg,sqlalchemy]>=2.4.0",
     "dishka>=1.4.1",
+    "uuid7>=0.1.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

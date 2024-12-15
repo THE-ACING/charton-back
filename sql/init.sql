@@ -20,3 +20,10 @@ PERFORM dblink_exec('', 'CREATE DATABASE spotify_parser');
 EXCEPTION WHEN duplicate_database THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
 END
 $$;
+
+DO $$
+BEGIN
+PERFORM dblink_exec('', 'CREATE DATABASE user_service');
+EXCEPTION WHEN duplicate_database THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
+END
+$$;
