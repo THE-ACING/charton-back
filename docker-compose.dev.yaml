@@ -61,7 +61,6 @@ services:
     env_file:
       - .env
     volumes:
-#      - ./yt-dlp.conf:/etc/yt-dlp.conf:ro
       - ./cookies.txt:/cookies.txt
     develop:
       watch:
@@ -112,7 +111,6 @@ services:
   postgres:
     image: postgres:17
     container_name: postgres
-    # command: ['postgres', '-c', 'wal_level=logical']
     restart: on-failure
     user: postgres
     healthcheck:

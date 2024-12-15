@@ -12,13 +12,9 @@ RUN uv venv /opt/venv && \
 # run stage
 FROM python:3.13-slim-bookworm
 
-RUN apt-get -y update && \
-    apt-get install -y ffmpeg &&\
-    apt-get -y update && \
-    apt-get clean all
-
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 COPY . .
 
-CMD ["/bin/bash", "-c", "alembic upgrade heads;python -m app.consumer"]
+EXPOSE 50051
+CMD ["/bin/bash", "-c", "alembic upgrade heads;python -m app.server"]
