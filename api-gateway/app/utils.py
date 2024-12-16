@@ -4,6 +4,7 @@ import grpc
 from dishka import Provider, provide, Scope
 
 from app.settings import Settings
+from services.playlist import playlist_pb2_grpc
 from services.track import track_pb2_grpc
 from services.auth import auth_pb2_grpc
 
@@ -18,3 +19,8 @@ class GrpcProvider(Provider):
     async def get_auth_service(self, settings: Settings) -> AsyncIterable[auth_pb2_grpc.AuthStub]:
         async with grpc.aio.insecure_channel(f'{settings.AUTH_SERVICE_GRPC_HOST}:{settings.AUTH_SERVICE_GRPC_PORT}') as channel:
             yield auth_pb2_grpc.AuthStub(channel)
+
+    @provide(scope=Scope.APP)
+    async def get_playlist_service(self, settings: Settings) -> AsyncIterable[playlist_pb2_grpc.PlaylistStub]:
+        async with grpc.aio.insecure_channel(f'{settings.PLAYLIST_SERVICE_GRPC_HOST}:{settings.PLAYLIST_SERVICE_GRPC_PORT}') as channel:
+            yield playlist_pb2_grpc.PlaylistStub(channel)

@@ -28,8 +28,7 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
             context: grpc.aio.ServicerContext,
             settings: FromDishka[Settings],
             telegram_user_repository: FromDishka[TelegramUserRepository],
-            user_service: FromDishka[user_pb2_grpc.UserStub],
-            session: FromDishka[AsyncSession]
+            user_service: FromDishka[user_pb2_grpc.UserStub]
     ) -> auth_pb2.UserResponse:
         try:
             data = safe_parse_webapp_init_data(token=settings.BOT_TOKEN.get_secret_value(), init_data=request.init_data)
@@ -44,7 +43,6 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
             user = await user_service.CreateUser(user_pb2.CreateUserRequest())
             await telegram_user_repository.create(TelegramUser(id=user.id, telegram_id=data.user.id))
 
-        await session.commit()
         return auth_pb2.UserResponse(id=str(user.id))
 
 

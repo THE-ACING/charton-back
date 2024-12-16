@@ -7,7 +7,8 @@ import logfire
 from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, DishkaAioInterceptor, GrpcioProvider
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
-from grpc_interceptor.exceptions import NotFound
+from grpc_interceptor.exceptions import NotFound, PermissionDenied
+from sqlalchemy.orm import selectinload
 
 from app.database import DatabaseProvider
 from app.settings import SettingsProvider
@@ -29,8 +30,11 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             playlist_repo: FromDishka[PlaylistRepository],
             session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
+        user_id = dict(context.invocation_metadata()).get("user_id")
+
         playlist = await playlist_repo.create(Playlist(
             title=request.title,
+            user_id=UUID(user_id),
             thumbnail=request.thumbnail or ''
         ))
         await session.commit()
@@ -46,14 +50,17 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             request: playlist_pb2.PlaylistRequest,
             context: grpc.aio.ServicerContext,
             playlist_repository: FromDishka[PlaylistRepository]
-    ) -> playlist_pb2.PlaylistResponse:
-        playlist = await playlist_repository.get(UUID(request.id))
+    ) -> playlist_pb2.PlaylistTracksResponse:
+        playlist = await playlist_repository.get(UUID(request.id), options=[selectinload(Playlist.tracks)])
         if not playlist:
             raise NotFound("Playlist not found")
-        return playlist_pb2.PlaylistResponse(
+        return playlist_pb2.PlaylistTracksResponse(
             id=str(playlist.id),
             title=playlist.title,
-            thumbnail=playlist.thumbnail
+            thumbnail=playlist.thumbnail,
+            tracks=[
+                playlist_pb2.TrackResponse(id=str(track.track_id)) for track in playlist.tracks
+            ]
         )
 
     @inject
@@ -67,6 +74,9 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         playlist = await playlist_repository.get(UUID(request.id))
         if not playlist:
             raise NotFound("Playlist not found")
+        user_id = dict(context.invocation_metadata()).get("user_id")
+        if playlist.user_id != UUID(user_id):
+            raise PermissionDenied("You don't have permission to update this playlist")
 
         if request.title:
             playlist.title = request.title
@@ -91,6 +101,10 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         playlist = await playlist_repository.get(UUID(request.id))
         if not playlist:
             raise NotFound("Playlist not found")
+        user_id = dict(context.invocation_metadata()).get("user_id")
+        if playlist.user_id != UUID(user_id):
+            raise PermissionDenied("You don't have permission to remove this playlist")
+
         await playlist_repository.delete(playlist)
         return playlist_pb2.PlaylistResponse(
             id=str(playlist.id),
@@ -111,6 +125,9 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         playlist = await playlist_repository.get(UUID(request.playlist_id))
         if not playlist:
             raise NotFound("Playlist not found")
+        user_id = dict(context.invocation_metadata()).get("user_id")
+        if playlist.user_id != UUID(user_id):
+            raise PermissionDenied("You don't have permission to add tracks to this playlist")
 
         try:
             await track_service.GetTrack(track_pb2.TrackRequest(id=request.track_id))
@@ -138,6 +155,10 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         playlist = await playlist_repository.get(UUID(request.playlist_id))
         if not playlist:
             raise NotFound("Playlist not found")
+        user_id = dict(context.invocation_metadata()).get("user_id")
+        if playlist.user_id != UUID(user_id):
+            raise PermissionDenied("You don't have permission to remove tracks from this playlist")
+
         track = await playlist_track_repository.get(UUID(request.track_id))
         if not track:
             raise NotFound("Track not found")
@@ -158,6 +179,25 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistsResponse:
         playlists = await playlist_repository.find(limit=request.limit, offset=request.offset)
+        return playlist_pb2.PlaylistsResponse(
+            playlists=[
+                playlist_pb2.PlaylistResponse(
+                    id=str(playlist.id),
+                    title=playlist.title,
+                    thumbnail=playlist.thumbnail
+                ) for playlist in playlists
+            ]
+        )
+
+    @inject
+    async def GetUserPlaylists(
+            self,
+            request: playlist_pb2.UserPlaylistsRequest,
+            context: grpc.aio.ServicerContext,
+            playlist_repository: FromDishka[PlaylistRepository]
+    ) -> playlist_pb2.PlaylistsResponse:
+        user_id = dict(context.invocation_metadata()).get("user_id")
+        playlists = await playlist_repository.find(Playlist.user_id == UUID(user_id), limit=request.limit, offset=request.offset)
         return playlist_pb2.PlaylistsResponse(
             playlists=[
                 playlist_pb2.PlaylistResponse(

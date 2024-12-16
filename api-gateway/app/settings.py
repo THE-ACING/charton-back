@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     AUTH_SERVICE_GRPC_HOST: str
     AUTH_SERVICE_GRPC_PORT: int
 
+    PLAYLIST_SERVICE_GRPC_HOST: str
+    PLAYLIST_SERVICE_GRPC_PORT: int
+
     model_config = SettingsConfigDict(
         env_file=('stack.env', '.env'),
         extra="ignore"

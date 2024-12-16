@@ -5,7 +5,7 @@ import warnings
 
 from services.playlist import playlist_pb2 as services_dot_playlist_dot_playlist__pb2
 
-GRPC_GENERATED_VERSION = '1.68.0'
+GRPC_GENERATED_VERSION = '1.67.1'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 

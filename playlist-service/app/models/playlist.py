@@ -1,4 +1,5 @@
 from typing import List, TYPE_CHECKING
+from uuid import UUID
 
 from sqlalchemy.orm import Mapped, relationship
 
@@ -8,7 +9,11 @@ if TYPE_CHECKING:
 
 
 class Playlist(Base):
+    __tablename__ = "playlists"
+
     title: Mapped[str]
     thumbnail: Mapped[str]
+
+    user_id: Mapped[UUID]
 
     tracks: Mapped[List["PlaylistTrack"]] = relationship(back_populates="playlist")
