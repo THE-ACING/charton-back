@@ -54,7 +54,7 @@ async def serve() -> None:
     service_provider.provide(UserRepository)
     container = make_async_container(service_provider, SettingsProvider(), DatabaseProvider(), GrpcioProvider())
 
-    logfire.configure(service_name="track-service")
+    logfire.configure(service_name="user-service")
 
     logging.basicConfig(level=logging.INFO, handlers=[logfire.LogfireLoggingHandler()])
     logfire.instrument_sqlalchemy(engine=(await container.get(AsyncEngine)).sync_engine)

@@ -1,13 +1,21 @@
-from dishka import provide, Provider, Scope
+from typing import List
+
+from dishka import Provider, Scope, provide
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    TRACK_SERVICE_GRPC_HOST: str
-    TRACK_SERVICE_GRPC_PORT: int
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: SecretStr
+    POSTGRES_DB: str = "auth_service"
 
-    AUTH_SERVICE_GRPC_HOST: str
-    AUTH_SERVICE_GRPC_PORT: int
+    BOT_TOKEN: SecretStr
+
+    USER_SERVICE_GRPC_HOST: str
+    USER_SERVICE_GRPC_PORT: int
 
     model_config = SettingsConfigDict(
         env_file=('stack.env', '.env'),
@@ -19,3 +27,4 @@ class SettingsProvider(Provider):
     @provide(scope=Scope.APP)
     def get_settings(self) -> Settings:
         return Settings()
+

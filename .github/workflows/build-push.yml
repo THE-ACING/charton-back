@@ -11,6 +11,7 @@ jobs:
       matrix:
         service:
           - api-gateway
+          - auth-service
           - pgsync
           - playlist-service
           - spotify-parser
