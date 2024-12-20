@@ -196,7 +196,6 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             context: grpc.aio.ServicerContext,
             playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistsResponse:
-        logfire.info(request=request)
         playlists = await playlist_repository.find(Playlist.user_id == UUID(request.user_id), limit=request.limit, offset=request.offset)
         return playlist_pb2.PlaylistsResponse(
             playlists=[
