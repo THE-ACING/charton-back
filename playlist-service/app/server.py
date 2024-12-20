@@ -196,8 +196,8 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             context: grpc.aio.ServicerContext,
             playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistsResponse:
-        user_id = dict(context.invocation_metadata()).get("user_id")
-        playlists = await playlist_repository.find(Playlist.user_id == UUID(user_id), limit=request.limit, offset=request.offset)
+        logfire.info(request=request)
+        playlists = await playlist_repository.find(Playlist.user_id == UUID(request.user_id), limit=request.limit, offset=request.offset)
         return playlist_pb2.PlaylistsResponse(
             playlists=[
                 playlist_pb2.PlaylistResponse(
@@ -227,7 +227,7 @@ async def serve():
         ]
     )
     playlist_pb2_grpc.add_PlaylistServicer_to_server(PlaylistServicer(), server)
-    listen_addr = "[::]:50052"
+    listen_addr = "[::]:50051"
     server.add_insecure_port(listen_addr)
     logging.info("Starting server on %s", listen_addr)
     await server.start()

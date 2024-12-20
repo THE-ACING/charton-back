@@ -12,7 +12,7 @@ service Playlist {
   rpc RemoveTrackFromPlaylist(AddTrackToPlaylistRequest) returns (PlaylistResponse) {}
 
   rpc GetPlaylists(PlaylistsRequest) returns (PlaylistsResponse) {}
-  rpc GetUserPlaylists(PlaylistsRequest) returns (PlaylistsResponse) {}
+  rpc GetUserPlaylists(UserPlaylistsRequest) returns (PlaylistsResponse) {}
 }
 
 message PlaylistRequest {

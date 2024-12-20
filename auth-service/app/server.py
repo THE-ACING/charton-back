@@ -37,9 +37,9 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
 
         telegram_user = await telegram_user_repository.find_one(TelegramUser.telegram_id == data.user.id)
 
-        try:
+        if telegram_user:
             user = await user_service.GetUser(user_pb2.UserRequest(id=str(telegram_user.id)))
-        except NotFound:
+        else:
             user = await user_service.CreateUser(user_pb2.CreateUserRequest())
             await telegram_user_repository.create(TelegramUser(id=user.id, telegram_id=data.user.id))
 

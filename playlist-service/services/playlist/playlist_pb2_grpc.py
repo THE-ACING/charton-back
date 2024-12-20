@@ -71,7 +71,7 @@ class PlaylistStub(object):
                 _registered_method=True)
         self.GetUserPlaylists = channel.unary_unary(
                 '/playlist.Playlist/GetUserPlaylists',
-                request_serializer=services_dot_playlist_dot_playlist__pb2.PlaylistsRequest.SerializeToString,
+                request_serializer=services_dot_playlist_dot_playlist__pb2.UserPlaylistsRequest.SerializeToString,
                 response_deserializer=services_dot_playlist_dot_playlist__pb2.PlaylistsResponse.FromString,
                 _registered_method=True)
 
@@ -167,7 +167,7 @@ def add_PlaylistServicer_to_server(servicer, server):
             ),
             'GetUserPlaylists': grpc.unary_unary_rpc_method_handler(
                     servicer.GetUserPlaylists,
-                    request_deserializer=services_dot_playlist_dot_playlist__pb2.PlaylistsRequest.FromString,
+                    request_deserializer=services_dot_playlist_dot_playlist__pb2.UserPlaylistsRequest.FromString,
                     response_serializer=services_dot_playlist_dot_playlist__pb2.PlaylistsResponse.SerializeToString,
             ),
     }
@@ -385,7 +385,7 @@ class Playlist(object):
             request,
             target,
             '/playlist.Playlist/GetUserPlaylists',
-            services_dot_playlist_dot_playlist__pb2.PlaylistsRequest.SerializeToString,
+            services_dot_playlist_dot_playlist__pb2.UserPlaylistsRequest.SerializeToString,
             services_dot_playlist_dot_playlist__pb2.PlaylistsResponse.FromString,
             options,
             channel_credentials,
