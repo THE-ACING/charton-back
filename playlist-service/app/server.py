@@ -27,15 +27,16 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             self,
             request: playlist_pb2.CreatePlaylistRequest,
             context: grpc.aio.ServicerContext,
-            playlist_repo: FromDishka[PlaylistRepository],
+            playlist_repository: FromDishka[PlaylistRepository],
             session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         user_id = dict(context.invocation_metadata()).get("user_id")
 
-        playlist = await playlist_repo.create(Playlist(
+        playlist = await playlist_repository.create(Playlist(
             title=request.title,
+            is_liked=request.is_liked,
             user_id=UUID(user_id),
-            thumbnail=request.thumbnail or ''
+            thumbnail=request.thumbnail
         ))
         await session.commit()
         return playlist_pb2.PlaylistResponse(

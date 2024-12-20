@@ -21,7 +21,8 @@ message PlaylistRequest {
 
 message CreatePlaylistRequest {
   string title = 1;
-  optional string thumbnail = 3;
+  optional string thumbnail = 2;
+  optional bool is_liked = 3;
 }
 
 message UpdatePlaylistRequest {

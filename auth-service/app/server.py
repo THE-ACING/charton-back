@@ -8,8 +8,8 @@ from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, GrpcioProvider, DishkaAioInterceptor
 from grpc_health.v1 import health
 from grpc_health.v1._async import _health_pb2_grpc  # noqa
-from grpc_interceptor.exceptions import NotFound, Unauthenticated
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from grpc_interceptor.exceptions import Unauthenticated
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.database import DatabaseProvider
 from app.models import TelegramUser
@@ -32,7 +32,7 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
     ) -> auth_pb2.UserResponse:
         try:
             data = safe_parse_webapp_init_data(token=settings.BOT_TOKEN.get_secret_value(), init_data=request.init_data)
-        except ValueError as e:
+        except ValueError:
             raise Unauthenticated("Invalid init data signature")
 
         telegram_user = await telegram_user_repository.find_one(TelegramUser.telegram_id == data.user.id)

@@ -27,10 +27,33 @@ build-backend = "hatchling.build"
 [tool.rye]
 virtual = true
 managed = true
-dev-dependencies = []
+dev-dependencies = [
+    "pre-commit>=4.0.1",
+    "pyright>=1.1.391",
+    "ruff>=0.8.3",
+    "types-protobuf>=5.29.1.20241207",
+    "pytest>=8.3.4",
+    "pytest-mock>=3.14.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-grpc>=0.8.0",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/user_service"]
+
+[tool.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "C901",  # too complex
+]

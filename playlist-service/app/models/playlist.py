@@ -1,7 +1,9 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 from uuid import UUID
 
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy.sql import expression
 
 from app.models import Base
 if TYPE_CHECKING:
@@ -12,7 +14,9 @@ class Playlist(Base):
     __tablename__ = "playlists"
 
     title: Mapped[str]
-    thumbnail: Mapped[str]
+    thumbnail: Mapped[Optional[str]]
+
+    is_liked: Mapped[bool] = mapped_column(default=False, server_default=expression.false())
 
     user_id: Mapped[UUID]
 

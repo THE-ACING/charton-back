@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from importlib.metadata import metadata
 from uuid import UUID
 
 import grpc  # type: ignore
@@ -15,7 +16,9 @@ from app.database import DatabaseProvider
 from app.models import User
 from app.repositories.user import UserRepository
 from app.settings import SettingsProvider
+from app.utils import GrpcProvider
 from services.user import user_pb2, user_pb2_grpc
+from services.playlist import playlist_pb2_grpc, playlist_pb2
 
 
 class UserServicer(user_pb2_grpc.UserServicer):
@@ -25,10 +28,20 @@ class UserServicer(user_pb2_grpc.UserServicer):
         request: user_pb2.CreateUserRequest,
         context: grpc.aio.ServicerContext,
         user_repository: FromDishka[UserRepository],
+        playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
         session: FromDishka[AsyncSession],
     ) -> user_pb2.UserResponse:
         user = await user_repository.create(User())
         await session.commit()
+
+        await playlist_service.CreatePlaylist(
+            playlist_pb2.CreatePlaylistRequest(
+                title="Liked",
+                is_liked=True
+            ),
+            metadata=(("user_id", str(user.id)),)
+        )
+
         return user_pb2.UserResponse(id=str(user.id))
 
     @inject
@@ -76,7 +89,7 @@ async def serve() -> None:
     service_provider = Provider(scope=Scope.REQUEST)
     service_provider.provide(UserRepository)
     container = make_async_container(
-        service_provider, SettingsProvider(), DatabaseProvider(), GrpcioProvider()
+        service_provider, SettingsProvider(), DatabaseProvider(), GrpcioProvider(), GrpcProvider()
     )
 
     logfire.configure(service_name="user-service")
