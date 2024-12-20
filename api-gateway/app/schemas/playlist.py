@@ -1,11 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel
 
-
-class Track(BaseModel):
-    id: UUID
+from app.schemas.tracks import Track
 
 
 class CreatePlaylist(BaseModel):
@@ -15,11 +13,12 @@ class CreatePlaylist(BaseModel):
 
 class Playlist(CreatePlaylist):
     id: UUID
+    is_liked: bool = False
 
 
 class PlaylistWithTracks(Playlist):
-    tracks: list[Track]
+    tracks: List[Track]
 
 
 class Playlists(BaseModel):
-    playlists: list[Playlist]
+    playlists: List[Playlist]

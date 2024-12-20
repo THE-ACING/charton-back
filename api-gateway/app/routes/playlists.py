@@ -6,9 +6,12 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Depends
 
 from app.auth import get_user
-from app.schemas.playlist import Playlist, CreatePlaylist, PlaylistWithTracks, Track, Playlists
+from app.schemas.author import Author
+from app.schemas.playlist import Playlist, CreatePlaylist, PlaylistWithTracks, Playlists
+from app.schemas.tracks import Track
 from app.schemas.user import User
 from services.playlist import playlist_pb2, playlist_pb2_grpc
+from services.track import track_pb2_grpc, track_pb2
 
 router = APIRouter(prefix="/playlists", tags=["playlists"], route_class=DishkaRoute)
 
@@ -32,9 +35,25 @@ async def create_playlist(
 async def get_playlist(
         playlist_id: UUID,
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
-) -> playlist_pb2.PlaylistTracksResponse:
-    return await playlist_service.GetPlaylist(playlist_pb2.PlaylistRequest(id=str(playlist_id)))
-
+        track_service: FromDishka[track_pb2_grpc.TrackStub],
+):
+    playlist = await playlist_service.GetPlaylist(playlist_pb2.PlaylistRequest(id=str(playlist_id)))
+    return PlaylistWithTracks(
+        id=playlist.id,
+        title=playlist.title,
+        thumbnail=playlist.thumbnail,
+        tracks=[Track(
+                id=track.id,
+                title=track.title,
+                authors=[Author(id=author.id, name=author.name, genres=author.genres) for author in track.authors],
+                duration=track.duration,
+                source=track.source,
+                thumbnail=track.thumbnail,
+            ) for track in (await track_service.GetTracksByIds(
+                track_pb2.TracksByIdsRequest(ids=playlist.tracks)
+            )).tracks
+        ]
+    )
 
 @router.put("/{playlist_id}", response_model=Playlist)
 async def update_playlist(

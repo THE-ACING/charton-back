@@ -32,32 +32,30 @@ class UpdatePlaylistRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., thumbnail: _Optional[str] = ...) -> None: ...
 
 class PlaylistResponse(_message.Message):
-    __slots__ = ("id", "title", "thumbnail")
+    __slots__ = ("id", "title", "thumbnail", "is_liked")
     ID_FIELD_NUMBER: _ClassVar[int]
     TITLE_FIELD_NUMBER: _ClassVar[int]
     THUMBNAIL_FIELD_NUMBER: _ClassVar[int]
+    IS_LIKED_FIELD_NUMBER: _ClassVar[int]
     id: str
     title: str
     thumbnail: str
-    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., thumbnail: _Optional[str] = ...) -> None: ...
-
-class TrackResponse(_message.Message):
-    __slots__ = ("id",)
-    ID_FIELD_NUMBER: _ClassVar[int]
-    id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    is_liked: bool
+    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., thumbnail: _Optional[str] = ..., is_liked: bool = ...) -> None: ...
 
 class PlaylistTracksResponse(_message.Message):
-    __slots__ = ("id", "title", "thumbnail", "tracks")
+    __slots__ = ("id", "title", "thumbnail", "is_liked", "tracks")
     ID_FIELD_NUMBER: _ClassVar[int]
     TITLE_FIELD_NUMBER: _ClassVar[int]
     THUMBNAIL_FIELD_NUMBER: _ClassVar[int]
+    IS_LIKED_FIELD_NUMBER: _ClassVar[int]
     TRACKS_FIELD_NUMBER: _ClassVar[int]
     id: str
     title: str
     thumbnail: str
-    tracks: _containers.RepeatedCompositeFieldContainer[TrackResponse]
-    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., thumbnail: _Optional[str] = ..., tracks: _Optional[_Iterable[_Union[TrackResponse, _Mapping]]] = ...) -> None: ...
+    is_liked: bool
+    tracks: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., thumbnail: _Optional[str] = ..., is_liked: bool = ..., tracks: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class AddTrackToPlaylistRequest(_message.Message):
     __slots__ = ("playlist_id", "track_id")

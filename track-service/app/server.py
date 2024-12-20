@@ -107,6 +107,24 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
         )
 
     @inject
+    async def GetTracksByIds(self, request: track_pb2.TracksByIdsRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TracksResponse:
+        tracks = await track_repository.find(Track.id.in_(UUID(track_id) for track_id in request.ids), options=[selectinload(Track.authors)])
+        return track_pb2.TracksResponse(
+            tracks=[track_pb2.TrackResponse(
+                id=str(track.id),
+                title=track.title,
+                authors=[track_pb2.Author(
+                    id=str(author.id),
+                    name=author.name,
+                    genres=author.genres
+                ) for author in track.authors],
+                duration=track.duration,
+                source=track.source,
+                thumbnail=track.thumbnail
+            ) for track in tracks]
+        )
+
+    @inject
     async def SearchTracks(
             self,
             request: track_pb2.SearchRequest,

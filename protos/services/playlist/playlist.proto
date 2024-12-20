@@ -34,18 +34,16 @@ message UpdatePlaylistRequest {
 message PlaylistResponse {
   string id = 1;
   string title = 2;
-  optional string thumbnail = 4;
-}
-
-message TrackResponse {
-  string id = 1;
+  optional string thumbnail = 3;
+  optional bool is_liked = 4;
 }
 
 message PlaylistTracksResponse {
   string id = 1;
   string title = 2;
   optional string thumbnail = 3;
-  repeated TrackResponse tracks = 4;
+  optional bool is_liked = 4;
+  repeated string tracks = 5;
 }
 
 message AddTrackToPlaylistRequest {

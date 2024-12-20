@@ -59,6 +59,12 @@ class TracksRequest(_message.Message):
     offset: int
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
+class TracksByIdsRequest(_message.Message):
+    __slots__ = ("ids",)
+    IDS_FIELD_NUMBER: _ClassVar[int]
+    ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class TracksResponse(_message.Message):
     __slots__ = ("tracks",)
     TRACKS_FIELD_NUMBER: _ClassVar[int]

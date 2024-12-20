@@ -49,6 +49,11 @@ class TrackStub(object):
                 request_serializer=services_dot_track_dot_track__pb2.TracksRequest.SerializeToString,
                 response_deserializer=services_dot_track_dot_track__pb2.TracksResponse.FromString,
                 _registered_method=True)
+        self.GetTracksByIds = channel.unary_unary(
+                '/track.Track/GetTracksByIds',
+                request_serializer=services_dot_track_dot_track__pb2.TracksByIdsRequest.SerializeToString,
+                response_deserializer=services_dot_track_dot_track__pb2.TracksResponse.FromString,
+                _registered_method=True)
         self.SearchTracks = channel.unary_unary(
                 '/track.Track/SearchTracks',
                 request_serializer=services_dot_track_dot_track__pb2.SearchRequest.SerializeToString,
@@ -82,6 +87,12 @@ class TrackServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetTracksByIds(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def SearchTracks(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -110,6 +121,11 @@ def add_TrackServicer_to_server(servicer, server):
             'GetTracks': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTracks,
                     request_deserializer=services_dot_track_dot_track__pb2.TracksRequest.FromString,
+                    response_serializer=services_dot_track_dot_track__pb2.TracksResponse.SerializeToString,
+            ),
+            'GetTracksByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTracksByIds,
+                    request_deserializer=services_dot_track_dot_track__pb2.TracksByIdsRequest.FromString,
                     response_serializer=services_dot_track_dot_track__pb2.TracksResponse.SerializeToString,
             ),
             'SearchTracks': grpc.unary_unary_rpc_method_handler(
@@ -203,6 +219,33 @@ class Track(object):
             target,
             '/track.Track/GetTracks',
             services_dot_track_dot_track__pb2.TracksRequest.SerializeToString,
+            services_dot_track_dot_track__pb2.TracksResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetTracksByIds(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/track.Track/GetTracksByIds',
+            services_dot_track_dot_track__pb2.TracksByIdsRequest.SerializeToString,
             services_dot_track_dot_track__pb2.TracksResponse.FromString,
             options,
             channel_credentials,
