@@ -28,4 +28,5 @@ class DatabaseProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_session(self, sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncIterable[AsyncSession]:
         async with sessionmaker() as session:
-            yield session
+            async with session.begin():
+                yield session
