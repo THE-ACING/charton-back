@@ -20,4 +20,4 @@ class Playlist(Base):
 
     user_id: Mapped[UUID]
 
-    tracks: Mapped[List["PlaylistTrack"]] = relationship(back_populates="playlist")
+    tracks: Mapped[List["PlaylistTrack"]] = relationship(back_populates="playlist", cascade="all, delete-orphan")

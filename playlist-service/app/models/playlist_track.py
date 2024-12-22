@@ -14,7 +14,7 @@ class PlaylistTrack(Base):
 
     track_id: Mapped[UUID]
 
-    playlist_id: Mapped[UUID] = mapped_column(ForeignKey("playlists.id"))
+    playlist_id: Mapped[UUID] = mapped_column(ForeignKey("playlists.id", ondelete="CASCADE"))
     playlist: Mapped["Playlist"] = relationship(back_populates="tracks")
 
     __table_args__ = (
