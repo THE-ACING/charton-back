@@ -169,11 +169,10 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         if playlist.user_id != UUID(user_id):
             raise PermissionDenied("You don't have permission to remove tracks from this playlist")
 
-        track = await playlist_track_repository.get(UUID(request.track_id))
+        track = await playlist_track_repository.find_one(PlaylistTrack.track_id == UUID(request.track_id), PlaylistTrack.playlist_id == UUID(request.playlist_id))
         if not track:
             raise NotFound("Track not found")
-        playlist.tracks.remove(track)
-        await session.commit()
+        await playlist_track_repository.delete(PlaylistTrack.id == track.id, PlaylistTrack.playlist_id == UUID(request.playlist_id))
 
         return playlist_pb2.PlaylistResponse(
             id=str(playlist.id),
