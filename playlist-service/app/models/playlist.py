@@ -1,7 +1,6 @@
 from typing import List, TYPE_CHECKING, Optional
 from uuid import UUID
 
-from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy.sql import expression
 

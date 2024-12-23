@@ -20,15 +20,49 @@ from app.repositories.playlist_track import PlaylistTrackRepository
 from services.track import track_pb2_grpc, track_pb2
 
 
+from typing import List
+
+
+class PlaylistMapper:
+
+    @staticmethod
+    def to_playlist_response(playlist: Playlist) -> playlist_pb2.PlaylistResponse:
+        return playlist_pb2.PlaylistResponse(
+            id=str(playlist.id),
+            title=playlist.title,
+            is_liked=playlist.is_liked,
+            thumbnail=playlist.thumbnail
+        )
+
+    @staticmethod
+    def to_playlist_tracks_response(playlist: Playlist) -> playlist_pb2.PlaylistTracksResponse:
+        return playlist_pb2.PlaylistTracksResponse(
+            id=str(playlist.id),
+            title=playlist.title,
+            is_liked=playlist.is_liked,
+            thumbnail=playlist.thumbnail,
+            tracks=[str(track.track_id) for track in playlist.tracks]
+        )
+
+    @staticmethod
+    def to_playlists_response(playlists: List[Playlist]) -> playlist_pb2.PlaylistsResponse:
+        return playlist_pb2.PlaylistsResponse(
+            playlists=[
+                PlaylistMapper.to_playlist_response(playlist)
+                for playlist in playlists
+            ]
+        )
+
+
 class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
 
     @inject
     async def CreatePlaylist(
-            self,
-            request: playlist_pb2.CreatePlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository],
-            session: FromDishka[AsyncSession]
+        self,
+        request: playlist_pb2.CreatePlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository],
+        session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         user_id = dict(context.invocation_metadata()).get("user_id")
 
@@ -39,38 +73,27 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             thumbnail=request.thumbnail
         ))
         await session.commit()
-        return playlist_pb2.PlaylistResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail
-        )
+        return PlaylistMapper.to_playlist_response(playlist)
 
     @inject
     async def GetPlaylist(
-            self,
-            request: playlist_pb2.PlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository]
+        self,
+        request: playlist_pb2.PlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistTracksResponse:
         playlist = await playlist_repository.get(UUID(request.id), options=[selectinload(Playlist.tracks)])
         if not playlist:
             raise NotFound("Playlist not found")
-        return playlist_pb2.PlaylistTracksResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail,
-            tracks=[str(track.track_id) for track in playlist.tracks]
-        )
+        return PlaylistMapper.to_playlist_tracks_response(playlist)
 
     @inject
     async def UpdatePlaylist(
-            self,
-            request: playlist_pb2.UpdatePlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository],
-            session: FromDishka[AsyncSession]
+        self,
+        request: playlist_pb2.UpdatePlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository],
+        session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         playlist = await playlist_repository.get(UUID(request.id))
         if not playlist:
@@ -85,20 +108,15 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             playlist.thumbnail = request.thumbnail
 
         await session.commit()
-        return playlist_pb2.PlaylistResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail
-        )
+        return PlaylistMapper.to_playlist_response(playlist)
 
     @inject
     async def RemovePlaylist(
-            self,
-            request: playlist_pb2.PlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository],
-            session: FromDishka[AsyncSession]
+        self,
+        request: playlist_pb2.PlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository],
+        session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         playlist = await playlist_repository.get(UUID(request.id))
         if not playlist:
@@ -110,22 +128,17 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             raise PermissionDenied("You don't have permission to remove this playlist")
 
         await playlist_repository.delete(Playlist.id == playlist.id)
-        return playlist_pb2.PlaylistResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail
-        )
+        return PlaylistMapper.to_playlist_response(playlist)
 
     @inject
     async def AddTrackToPlaylist(
-            self,
-            request: playlist_pb2.AddTrackToPlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            track_service: FromDishka[track_pb2_grpc.TrackStub],
-            playlist_repository: FromDishka[PlaylistRepository],
-            playlist_track_repository: FromDishka[PlaylistTrackRepository],
-            session: FromDishka[AsyncSession]
+        self,
+        request: playlist_pb2.AddTrackToPlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        track_service: FromDishka[track_pb2_grpc.TrackStub],
+        playlist_repository: FromDishka[PlaylistRepository],
+        playlist_track_repository: FromDishka[PlaylistTrackRepository],
+        session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         playlist = await playlist_repository.get(UUID(request.playlist_id), options=[selectinload(Playlist.tracks)])
         if not playlist:
@@ -146,21 +159,16 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
             ))
         )
         await session.commit()
-        return playlist_pb2.PlaylistResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail
-        )
+        return PlaylistMapper.to_playlist_response(playlist)
 
     @inject
     async def RemoveTrackFromPlaylist(
-            self,
-            request: playlist_pb2.AddTrackToPlaylistRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository],
-            playlist_track_repository: FromDishka[PlaylistTrackRepository],
-            session: FromDishka[AsyncSession]
+        self,
+        request: playlist_pb2.AddTrackToPlaylistRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository],
+        playlist_track_repository: FromDishka[PlaylistTrackRepository],
+        session: FromDishka[AsyncSession]
     ) -> playlist_pb2.PlaylistResponse:
         playlist = await playlist_repository.get(UUID(request.playlist_id))
         if not playlist:
@@ -169,55 +177,41 @@ class PlaylistServicer(playlist_pb2_grpc.PlaylistServicer):
         if playlist.user_id != UUID(user_id):
             raise PermissionDenied("You don't have permission to remove tracks from this playlist")
 
-        track = await playlist_track_repository.find_one(PlaylistTrack.track_id == UUID(request.track_id), PlaylistTrack.playlist_id == UUID(request.playlist_id))
+        track = await playlist_track_repository.find_one(
+            PlaylistTrack.track_id == UUID(request.track_id),
+            PlaylistTrack.playlist_id == UUID(request.playlist_id)
+        )
         if not track:
             raise NotFound("Track not found")
-        await playlist_track_repository.delete(PlaylistTrack.id == track.id, PlaylistTrack.playlist_id == UUID(request.playlist_id))
-
-        return playlist_pb2.PlaylistResponse(
-            id=str(playlist.id),
-            title=playlist.title,
-            is_liked=playlist.is_liked,
-            thumbnail=playlist.thumbnail
+        await playlist_track_repository.delete(
+            PlaylistTrack.id == track.id,
+            PlaylistTrack.playlist_id == UUID(request.playlist_id)
         )
+
+        return PlaylistMapper.to_playlist_response(playlist)
 
     @inject
     async def GetPlaylists(
-            self,
-            request: playlist_pb2.PlaylistsRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository]
+        self,
+        request: playlist_pb2.PlaylistsRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistsResponse:
         playlists = await playlist_repository.find(limit=request.limit, offset=request.offset)
-        return playlist_pb2.PlaylistsResponse(
-            playlists=[
-                playlist_pb2.PlaylistResponse(
-                    id=str(playlist.id),
-                    title=playlist.title,
-                    is_liked=playlist.is_liked,
-                    thumbnail=playlist.thumbnail
-                ) for playlist in playlists
-            ]
-        )
+        return PlaylistMapper.to_playlists_response(playlists)
 
     @inject
     async def GetUserPlaylists(
-            self,
-            request: playlist_pb2.UserPlaylistsRequest,
-            context: grpc.aio.ServicerContext,
-            playlist_repository: FromDishka[PlaylistRepository]
+        self,
+        request: playlist_pb2.UserPlaylistsRequest,
+        context: grpc.aio.ServicerContext,
+        playlist_repository: FromDishka[PlaylistRepository]
     ) -> playlist_pb2.PlaylistsResponse:
-        playlists = await playlist_repository.find(Playlist.user_id == UUID(request.user_id), limit=request.limit, offset=request.offset)
-        return playlist_pb2.PlaylistsResponse(
-            playlists=[
-                playlist_pb2.PlaylistResponse(
-                    id=str(playlist.id),
-                    title=playlist.title,
-                    is_liked=playlist.is_liked,
-                    thumbnail=playlist.thumbnail
-                ) for playlist in playlists
-            ]
+        playlists = await playlist_repository.find(
+            Playlist.user_id == UUID(request.user_id),
+            limit=request.limit, offset=request.offset
         )
+        return PlaylistMapper.to_playlists_response(playlists)
 
 
 async def serve():

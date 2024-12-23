@@ -1,4 +1,3 @@
-from typing import List
 
 from dishka import Provider, Scope, provide
 from pydantic import SecretStr
