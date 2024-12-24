@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from app.auth import get_user
 from app.schemas.playlist import Playlists
-from app.schemas.user import User, UpdateUser, BindReferrerResponse
+from app.schemas.user import User, UpdateUser, BindReferrerResponse, Users
 from services.auth import auth_pb2
 from services.playlist import playlist_pb2_grpc, playlist_pb2
 from services.user import user_pb2_grpc, user_pb2
@@ -34,7 +34,7 @@ async def get_playlists(
     ))
 
 
-@router.get("/{user_id}/referrals", response_model=Playlists)
+@router.get("/{user_id}/referrals", response_model=Users)
 async def get_referrals(
         user_id: UUID,
         user_service: FromDishka[user_pb2_grpc.UserStub]

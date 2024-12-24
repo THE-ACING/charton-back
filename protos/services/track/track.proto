@@ -9,7 +9,7 @@ service Track {
   rpc GetTracksByIds(TracksByIdsRequest) returns (TracksResponse) {}
   rpc SearchTracks(SearchRequest) returns (TracksResponse) {}
 
-  rpc CreateAuthor(CreateAuthorRequest) returns (AuthorResponse) {}
+  rpc CreateAuthor(CreateAuthorRequest) returns (Author) {}
 }
 
 message Author {
@@ -61,10 +61,4 @@ message SearchRequest {
 message CreateAuthorRequest {
   string name = 1;
   string genres = 2;
-}
-
-message AuthorResponse {
-  string id = 1;
-  string name = 2;
-  string genres = 3;
 }

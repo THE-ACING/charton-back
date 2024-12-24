@@ -88,13 +88,3 @@ class CreateAuthorRequest(_message.Message):
     name: str
     genres: str
     def __init__(self, name: _Optional[str] = ..., genres: _Optional[str] = ...) -> None: ...
-
-class AuthorResponse(_message.Message):
-    __slots__ = ("id", "name", "genres")
-    ID_FIELD_NUMBER: _ClassVar[int]
-    NAME_FIELD_NUMBER: _ClassVar[int]
-    GENRES_FIELD_NUMBER: _ClassVar[int]
-    id: str
-    name: str
-    genres: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., genres: _Optional[str] = ...) -> None: ...

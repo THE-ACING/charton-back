@@ -11,7 +11,7 @@ from elasticsearch import AsyncElasticsearch
 from grpc_interceptor import AsyncExceptionToStatusInterceptor
 from grpc_interceptor.exceptions import NotFound
 from grpc_health.v1 import health
-from grpc_health.v1._async import _health_pb2_grpc # noqa
+from grpc_health.v1._async import _health_pb2_grpc  # noqa
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
 from sqlalchemy.orm import selectinload
 
@@ -27,19 +27,36 @@ from services.track import track_pb2
 from services.track import track_pb2_grpc
 
 
+class TrackMapper:
+    @staticmethod
+    def to_author_response(author: Author) -> track_pb2.Author:
+        return track_pb2.Author(
+            id=str(author.id),
+            name=author.name,
+            genres=author.genres
+        )
+
+    @staticmethod
+    def to_track_response(track: Track) -> track_pb2.TrackResponse:
+        return track_pb2.TrackResponse(
+            id=str(track.id),
+            title=track.title,
+            authors=[TrackMapper.to_author_response(author) for author in track.authors],
+            duration=track.duration,
+            source=track.source,
+            thumbnail=track.thumbnail
+        )
+
+
 class TrackServicer(track_pb2_grpc.TrackServicer):
     @inject
-    async def CreateAuthor(self, request: track_pb2.CreateAuthorRequest, context: grpc.aio.ServicerContext, author_repository: FromDishka[AuthorRepository], session: FromDishka[AsyncSession]) -> track_pb2.AuthorResponse:
+    async def CreateAuthor(self, request: track_pb2.CreateAuthorRequest, context: grpc.aio.ServicerContext, author_repository: FromDishka[AuthorRepository], session: FromDishka[AsyncSession]) -> track_pb2.Author:
         author = await author_repository.create(Author(
             name=request.name,
             genres=request.genres
         ))
         await session.commit()
-        return track_pb2.AuthorResponse(
-            id=str(author.id),
-            name=author.name,
-            genres=author.genres
-        )
+        return TrackMapper.to_author_response(author)
 
     @inject
     async def CreateTrack(self, request: track_pb2.CreateTrackRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository], author_repository: FromDishka[AuthorRepository], session: FromDishka[AsyncSession]) -> track_pb2.TrackResponse:
@@ -58,71 +75,27 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
             thumbnail=request.thumbnail,
         ))
         await session.commit()
-        return track_pb2.TrackResponse(
-            id=str(track.id),
-            title=track.title,
-            authors=[track_pb2.Author(
-                id=str(author.id),
-                name=author.name,
-                genres=author.genres
-            ) for author in track.authors],
-            duration=track.duration,
-            source=track.source,
-            thumbnail=track.thumbnail
-        )
+        return TrackMapper.to_track_response(track)
 
     @inject
     async def GetTrack(self, request: track_pb2.TrackRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TrackResponse:
         track = await track_repository.get(UUID(request.id), options=[selectinload(Track.authors)])
         if track is None:
             raise NotFound("Track not found")
-        return track_pb2.TrackResponse(
-            id=str(track.id),
-            title=track.title,
-            authors=[track_pb2.Author(
-                id=str(author.id),
-                name=author.name,
-                genres=author.genres
-            ) for author in track.authors],
-            duration=track.duration,
-            source=track.source,
-            thumbnail=track.thumbnail
-        )
+        return TrackMapper.to_track_response(track)
 
     @inject
     async def GetTracks(self, request: track_pb2.TracksRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TracksResponse:
         tracks = await track_repository.find(limit=request.limit, offset=request.offset, options=[selectinload(Track.authors)])
         return track_pb2.TracksResponse(
-            tracks=[track_pb2.TrackResponse(
-                id=str(track.id),
-                title=track.title,
-                authors=[track_pb2.Author(
-                    id=str(author.id),
-                    name=author.name,
-                    genres=author.genres
-                ) for author in track.authors],
-                duration=track.duration,
-                source=track.source,
-                thumbnail=track.thumbnail
-            ) for track in tracks]
+            tracks=[TrackMapper.to_track_response(track) for track in tracks]
         )
 
     @inject
     async def GetTracksByIds(self, request: track_pb2.TracksByIdsRequest, context: grpc.aio.ServicerContext, track_repository: FromDishka[TrackRepository]) -> track_pb2.TracksResponse:
         tracks = await track_repository.find(Track.id.in_(UUID(track_id) for track_id in request.ids), options=[selectinload(Track.authors)])
         return track_pb2.TracksResponse(
-            tracks=[track_pb2.TrackResponse(
-                id=str(track.id),
-                title=track.title,
-                authors=[track_pb2.Author(
-                    id=str(author.id),
-                    name=author.name,
-                    genres=author.genres
-                ) for author in track.authors],
-                duration=track.duration,
-                source=track.source,
-                thumbnail=track.thumbnail
-            ) for track in tracks]
+            tracks=[TrackMapper.to_track_response(track) for track in tracks]
         )
 
     @inject
@@ -148,18 +121,7 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
         tracks = sorted(tracks, key=lambda track: track_ids_order[track.id])
 
         return track_pb2.TracksResponse(
-            tracks=[track_pb2.TrackResponse(
-                id=str(track.id),
-                title=track.title,
-                authors=[track_pb2.Author(
-                    id=str(author.id),
-                    name=author.name,
-                    genres=author.genres
-                ) for author in track.authors],
-                duration=track.duration,
-                source=track.source,
-                thumbnail=track.thumbnail
-            ) for track in tracks]
+            tracks=[TrackMapper.to_track_response(track) for track in tracks]
         )
 
 

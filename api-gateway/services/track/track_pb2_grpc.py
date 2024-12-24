@@ -62,7 +62,7 @@ class TrackStub(object):
         self.CreateAuthor = channel.unary_unary(
                 '/track.Track/CreateAuthor',
                 request_serializer=services_dot_track_dot_track__pb2.CreateAuthorRequest.SerializeToString,
-                response_deserializer=services_dot_track_dot_track__pb2.AuthorResponse.FromString,
+                response_deserializer=services_dot_track_dot_track__pb2.Author.FromString,
                 _registered_method=True)
 
 
@@ -136,7 +136,7 @@ def add_TrackServicer_to_server(servicer, server):
             'CreateAuthor': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateAuthor,
                     request_deserializer=services_dot_track_dot_track__pb2.CreateAuthorRequest.FromString,
-                    response_serializer=services_dot_track_dot_track__pb2.AuthorResponse.SerializeToString,
+                    response_serializer=services_dot_track_dot_track__pb2.Author.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -300,7 +300,7 @@ class Track(object):
             target,
             '/track.Track/CreateAuthor',
             services_dot_track_dot_track__pb2.CreateAuthorRequest.SerializeToString,
-            services_dot_track_dot_track__pb2.AuthorResponse.FromString,
+            services_dot_track_dot_track__pb2.Author.FromString,
             options,
             channel_credentials,
             insecure,
