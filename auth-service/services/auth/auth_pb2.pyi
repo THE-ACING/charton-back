@@ -11,7 +11,11 @@ class InitDataRequest(_message.Message):
     def __init__(self, init_data: _Optional[str] = ...) -> None: ...
 
 class UserResponse(_message.Message):
-    __slots__ = ("id",)
+    __slots__ = ("id", "username", "photo_url")
     ID_FIELD_NUMBER: _ClassVar[int]
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PHOTO_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    username: str
+    photo_url: str
+    def __init__(self, id: _Optional[str] = ..., username: _Optional[str] = ..., photo_url: _Optional[str] = ...) -> None: ...

@@ -14,10 +14,15 @@ message UserRequest {
   string id = 1;
 }
 
-message CreateUserRequest { }
+message CreateUserRequest {
+  string username = 1;
+  string photo_url = 2;
+}
 
 message UserResponse {
   string id = 1;
+  string username = 2;
+  string photo_url = 3;
 }
 
 message UsersRequest {

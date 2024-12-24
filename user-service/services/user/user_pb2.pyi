@@ -12,14 +12,22 @@ class UserRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class CreateUserRequest(_message.Message):
-    __slots__ = ()
-    def __init__(self) -> None: ...
+    __slots__ = ("username", "photo_url")
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PHOTO_URL_FIELD_NUMBER: _ClassVar[int]
+    username: str
+    photo_url: str
+    def __init__(self, username: _Optional[str] = ..., photo_url: _Optional[str] = ...) -> None: ...
 
 class UserResponse(_message.Message):
-    __slots__ = ("id",)
+    __slots__ = ("id", "username", "photo_url")
     ID_FIELD_NUMBER: _ClassVar[int]
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PHOTO_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    username: str
+    photo_url: str
+    def __init__(self, id: _Optional[str] = ..., username: _Optional[str] = ..., photo_url: _Optional[str] = ...) -> None: ...
 
 class UsersRequest(_message.Message):
     __slots__ = ("limit", "offset")

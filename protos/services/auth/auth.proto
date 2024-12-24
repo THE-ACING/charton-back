@@ -12,4 +12,6 @@ message InitDataRequest {
 
 message UserResponse {
   string id = 1;
+  string username = 2;
+  string photo_url = 3;
 }

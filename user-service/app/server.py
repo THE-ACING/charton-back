@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from importlib.metadata import metadata
 from uuid import UUID
 
 import grpc  # type: ignore
@@ -21,6 +20,22 @@ from services.user import user_pb2, user_pb2_grpc
 from services.playlist import playlist_pb2_grpc, playlist_pb2
 
 
+class UserMapper:
+    @staticmethod
+    def to_user_response(user: User) -> user_pb2.UserResponse:
+        return user_pb2.UserResponse(
+            id=str(user.id),
+            username=user.username,
+            photo_url=user.photo_url
+        )
+
+    @staticmethod
+    def to_users_response(users: list[User]) -> user_pb2.UsersResponse:
+        return user_pb2.UsersResponse(
+            users=[UserMapper.to_user_response(user) for user in users]
+        )
+
+
 class UserServicer(user_pb2_grpc.UserServicer):
     @inject
     async def CreateUser(
@@ -31,7 +46,10 @@ class UserServicer(user_pb2_grpc.UserServicer):
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
         session: FromDishka[AsyncSession],
     ) -> user_pb2.UserResponse:
-        user = await user_repository.create(User())
+        user = await user_repository.create(User(
+            username=request.username,
+            photo_url=request.photo_url
+        ))
         await session.commit()
 
         await playlist_service.CreatePlaylist(
@@ -42,7 +60,7 @@ class UserServicer(user_pb2_grpc.UserServicer):
             metadata=(("user_id", str(user.id)),)
         )
 
-        return user_pb2.UserResponse(id=str(user.id))
+        return UserMapper.to_user_response(user)
 
     @inject
     async def GetUser(  # type: ignore[override]
@@ -54,7 +72,7 @@ class UserServicer(user_pb2_grpc.UserServicer):
         user = await user_repository.get(UUID(request.id))
         if user is None:
             raise NotFound("User not found")
-        return user_pb2.UserResponse(id=str(user.id))
+        return UserMapper.to_user_response(user)
 
     @inject
     async def DeleteUser(  # type: ignore[override]
@@ -70,7 +88,7 @@ class UserServicer(user_pb2_grpc.UserServicer):
 
         await user_repository.delete(User.id == user.id)
         await session.commit()
-        return user_pb2.UserResponse(id=str(user.id))
+        return UserMapper.to_user_response(user)
 
     @inject
     async def GetUsers(  # type: ignore[override]
@@ -80,9 +98,7 @@ class UserServicer(user_pb2_grpc.UserServicer):
         user_repository: FromDishka[UserRepository],
     ) -> user_pb2.UsersResponse:
         users = await user_repository.find(limit=request.limit, offset=request.offset)
-        return user_pb2.UsersResponse(
-            users=[user_pb2.UserResponse(id=str(user.id)) for user in users]
-        )
+        return UserMapper.to_users_response(users)
 
 
 async def serve() -> None:

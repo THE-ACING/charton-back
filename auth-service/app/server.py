@@ -3,7 +3,7 @@ import logging
 
 import grpc
 import logfire
-from aiogram.utils.web_app import safe_parse_webapp_init_data
+from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
 from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, GrpcioProvider, DishkaAioInterceptor
 from grpc_health.v1 import health
@@ -15,9 +15,26 @@ from app.database import DatabaseProvider
 from app.models import TelegramUser
 from app.repositories.telegram_user import TelegramUserRepository
 from app.settings import SettingsProvider, Settings
-from app.utils import GrpcProvider
+from app.utils import GrpcProvider, B2SDKProvider
 from services.auth import auth_pb2, auth_pb2_grpc
 from services.user import user_pb2, user_pb2_grpc
+
+
+class AuthMapper:
+    @staticmethod
+    def to_user_response(user: user_pb2.UserResponse) -> auth_pb2.UserResponse:
+        return auth_pb2.UserResponse(
+            id=str(user.id),
+            username=user.username,
+            photo_url=user.photo_url
+        )
+
+    @staticmethod
+    def to_create_user_request(data: WebAppInitData) -> user_pb2.CreateUserRequest:
+        return user_pb2.CreateUserRequest(
+            username=data.user.username,
+            photo_url=data.user.photo_url
+        )
 
 
 class AuthServicer(auth_pb2_grpc.AuthServicer):
@@ -28,7 +45,7 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
             context: grpc.aio.ServicerContext,
             settings: FromDishka[Settings],
             telegram_user_repository: FromDishka[TelegramUserRepository],
-            user_service: FromDishka[user_pb2_grpc.UserStub]
+            user_service: FromDishka[user_pb2_grpc.UserStub],
     ) -> auth_pb2.UserResponse:
         try:
             data = safe_parse_webapp_init_data(token=settings.BOT_TOKEN.get_secret_value(), init_data=request.init_data)
@@ -40,16 +57,16 @@ class AuthServicer(auth_pb2_grpc.AuthServicer):
         if telegram_user:
             user = await user_service.GetUser(user_pb2.UserRequest(id=str(telegram_user.id)))
         else:
-            user = await user_service.CreateUser(user_pb2.CreateUserRequest())
+            user = await user_service.CreateUser(AuthMapper.to_create_user_request(data))
             await telegram_user_repository.create(TelegramUser(id=user.id, telegram_id=data.user.id))
 
-        return auth_pb2.UserResponse(id=str(user.id))
+        return AuthMapper.to_user_response(user)
 
 
 async def serve() -> None:
     service_provider = Provider(scope=Scope.REQUEST)
     service_provider.provide(TelegramUserRepository)
-    container = make_async_container(service_provider, SettingsProvider(), DatabaseProvider(), GrpcProvider(), GrpcioProvider())
+    container = make_async_container(service_provider, SettingsProvider(), DatabaseProvider(), GrpcProvider(), B2SDKProvider(), GrpcioProvider())
 
     logfire.configure(service_name="auth-service")
 

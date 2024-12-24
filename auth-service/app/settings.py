@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     USER_SERVICE_GRPC_HOST: str
     USER_SERVICE_GRPC_PORT: int
 
+    B2_KEY_ID: str
+    B2_APPLICATION_KEY: str
+    B2_PHOTOS_BUCKET_NAME: str
+
     model_config = SettingsConfigDict(
         env_file=('stack.env', '.env'),
         extra="ignore"

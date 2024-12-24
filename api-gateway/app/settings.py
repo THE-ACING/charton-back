@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     PLAYLIST_SERVICE_GRPC_HOST: str
     PLAYLIST_SERVICE_GRPC_PORT: int
 
+    USER_SERVICE_GRPC_HOST: str
+    USER_SERVICE_GRPC_PORT: int
+
     model_config = SettingsConfigDict(
         env_file=('stack.env', '.env'),
         extra="ignore"

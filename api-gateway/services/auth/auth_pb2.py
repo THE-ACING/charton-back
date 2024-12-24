@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18services/auth/auth.proto\x12\x04\x61uth\"$\n\x0fInitDataRequest\x12\x11\n\tinit_data\x18\x01 \x01(\t\"\x1a\n\x0cUserResponse\x12\n\n\x02id\x18\x01 \x01(\t2H\n\x04\x41uth\x12@\n\x11GetUserByInitData\x12\x15.auth.InitDataRequest\x1a\x12.auth.UserResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18services/auth/auth.proto\x12\x04\x61uth\"$\n\x0fInitDataRequest\x12\x11\n\tinit_data\x18\x01 \x01(\t\"?\n\x0cUserResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x11\n\tphoto_url\x18\x03 \x01(\t2H\n\x04\x41uth\x12@\n\x11GetUserByInitData\x12\x15.auth.InitDataRequest\x1a\x12.auth.UserResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_INITDATAREQUEST']._serialized_start=34
   _globals['_INITDATAREQUEST']._serialized_end=70
   _globals['_USERRESPONSE']._serialized_start=72
-  _globals['_USERRESPONSE']._serialized_end=98
-  _globals['_AUTH']._serialized_start=100
-  _globals['_AUTH']._serialized_end=172
+  _globals['_USERRESPONSE']._serialized_end=135
+  _globals['_AUTH']._serialized_start=137
+  _globals['_AUTH']._serialized_end=209
 # @@protoc_insertion_point(module_scope)
