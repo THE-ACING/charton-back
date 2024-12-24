@@ -110,6 +110,9 @@ class UserServicer(user_pb2_grpc.UserServicer):
             user_repository: FromDishka[UserRepository],
             session: FromDishka[AsyncSession],
     ) -> user_pb2.BindReferrerResponse:
+        if request.user_id == request.referrer_id:
+            raise AlreadyExists("User cannot be a referrer for himself")
+
         user = await user_repository.get(UUID(request.user_id))
         if user is None:
             raise NotFound("User not found")

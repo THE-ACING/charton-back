@@ -16,6 +16,11 @@ def grpc_exception_handler(request: Request, exc: AioRpcError) -> JSONResponse:
                 status_code=403,
                 content={"detail": exc.details()},
             )
+        case StatusCode.ALREADY_EXISTS:
+            return JSONResponse(
+                status_code=409,
+                content={"detail": exc.details()},
+            )
         case _:
             return JSONResponse(
                 status_code=500,
