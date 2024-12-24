@@ -9,15 +9,15 @@ def grpc_exception_handler(request: Request, exc: AioRpcError) -> JSONResponse:
         case StatusCode.NOT_FOUND:
             return JSONResponse(
                 status_code=404,
-                content={"detail": "Not Found"},
+                content={"detail": exc.details()},
             )
         case StatusCode.PERMISSION_DENIED:
             return JSONResponse(
                 status_code=403,
-                content={"detail": "Permission Denied"},
+                content={"detail": exc.details()},
             )
         case _:
             return JSONResponse(
                 status_code=500,
-                content={"detail": "Internal Server Error"},
+                content={"detail": exc.details()},
             )

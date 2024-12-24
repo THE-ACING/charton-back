@@ -27,6 +27,8 @@ virtual = true
 managed = true
 dev-dependencies = [
     "ruff>=0.8.4",
+    "mypy>=1.14.0",
+    "types-protobuf>=5.29.1.20241207",
 ]
 
 [tool.hatch.metadata]

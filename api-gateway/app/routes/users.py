@@ -43,5 +43,5 @@ async def get_referrals(
 
 
 @router.post("/me", response_model=BindReferrerResponse)
-async def set_referrer(user: Annotated[auth_pb2.UserResponse, Depends(get_user)], request: UpdateUser, user_service: FromDishka[user_pb2_grpc.UserStub]):
+async def set_referrer(user: Annotated[auth_pb2.UserResponse, Depends(get_user)], request: UpdateUser, user_service: FromDishka[user_pb2_grpc.UserStub]) -> user_pb2.BindReferrerResponse:
     return await user_service.BindReferrer(user_pb2.BindReferrerRequest(user_id=str(user.id), referrer_id=str(request.referrer_id)))
