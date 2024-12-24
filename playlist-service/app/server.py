@@ -7,6 +7,7 @@ import logfire
 from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, DishkaAioInterceptor, GrpcioProvider
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
+from grpc_interceptor import AsyncExceptionToStatusInterceptor
 from grpc_interceptor.exceptions import NotFound, PermissionDenied
 from sqlalchemy.orm import selectinload
 
@@ -228,7 +229,8 @@ async def serve():
 
     server = grpc.aio.server(
         interceptors=[
-            DishkaAioInterceptor(container)
+            DishkaAioInterceptor(container),
+            AsyncExceptionToStatusInterceptor()
         ]
     )
     playlist_pb2_grpc.add_PlaylistServicer_to_server(PlaylistServicer(), server)

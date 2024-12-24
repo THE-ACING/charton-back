@@ -42,3 +42,23 @@ class UsersResponse(_message.Message):
     USERS_FIELD_NUMBER: _ClassVar[int]
     users: _containers.RepeatedCompositeFieldContainer[UserResponse]
     def __init__(self, users: _Optional[_Iterable[_Union[UserResponse, _Mapping]]] = ...) -> None: ...
+
+class BindReferrerRequest(_message.Message):
+    __slots__ = ("user_id", "referrer_id")
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    REFERRER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    referrer_id: str
+    def __init__(self, user_id: _Optional[str] = ..., referrer_id: _Optional[str] = ...) -> None: ...
+
+class BindReferrerResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
+
+class ReferralsRequest(_message.Message):
+    __slots__ = ("referrer_id",)
+    REFERRER_ID_FIELD_NUMBER: _ClassVar[int]
+    referrer_id: str
+    def __init__(self, referrer_id: _Optional[str] = ...) -> None: ...

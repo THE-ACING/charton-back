@@ -8,6 +8,9 @@ service User {
   rpc DeleteUser(UserRequest) returns (UserResponse) {}
 
   rpc GetUsers(UsersRequest) returns (UsersResponse) {}
+
+  rpc BindReferrer(BindReferrerRequest) returns (BindReferrerResponse);
+  rpc GetReferrals(ReferralsRequest) returns (UsersResponse);
 }
 
 message UserRequest {
@@ -32,4 +35,17 @@ message UsersRequest {
 
 message UsersResponse {
   repeated UserResponse users = 1;
+}
+
+message BindReferrerRequest {
+    string user_id = 1;
+    string referrer_id = 2;
+}
+
+message BindReferrerResponse {
+    bool success = 1;
+}
+
+message ReferralsRequest {
+    string referrer_id = 1;
 }

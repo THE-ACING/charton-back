@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Sequence
 from uuid import UUID
 
 import grpc  # type: ignore
@@ -8,7 +9,8 @@ from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, GrpcioProvider, DishkaAioInterceptor
 from grpc_health.v1 import health  # type: ignore
 from grpc_health.v1._async import _health_pb2_grpc  # type: ignore
-from grpc_interceptor.exceptions import NotFound
+from grpc_interceptor import AsyncExceptionToStatusInterceptor
+from grpc_interceptor.exceptions import NotFound, AlreadyExists
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.database import DatabaseProvider
@@ -30,7 +32,7 @@ class UserMapper:
         )
 
     @staticmethod
-    def to_users_response(users: list[User]) -> user_pb2.UsersResponse:
+    def to_users_response(users: Sequence[User]) -> user_pb2.UsersResponse:
         return user_pb2.UsersResponse(
             users=[UserMapper.to_user_response(user) for user in users]
         )
@@ -100,6 +102,38 @@ class UserServicer(user_pb2_grpc.UserServicer):
         users = await user_repository.find(limit=request.limit, offset=request.offset)
         return UserMapper.to_users_response(users)
 
+    @inject
+    async def BindReferrer(
+            self,
+            request: user_pb2.BindReferrerRequest,
+            context: grpc.aio.ServicerContext,
+            user_repository: FromDishka[UserRepository],
+            session: FromDishka[AsyncSession],
+    ) -> user_pb2.BindReferrerResponse:
+        user = await user_repository.get(UUID(request.user_id))
+        if user is None:
+            raise NotFound("User not found")
+        if user.referrer_id is not None:
+            raise AlreadyExists("User already has a referrer")
+
+        referrer = await user_repository.get(UUID(request.referrer_id))
+        if referrer is None:
+            raise NotFound("Referrer not found")
+
+        user.referrer_id = referrer.id
+
+        return user_pb2.BindReferrerResponse(success=True)
+
+    @inject
+    async def GetReferrals(
+            self,
+            request: user_pb2.ReferralsRequest,
+            context: grpc.aio.ServicerContext,
+            user_repository: FromDishka[UserRepository],
+    ) -> user_pb2.UsersResponse:
+        referrals = await user_repository.find(User.referrer_id == UUID(request.referrer_id))
+        return UserMapper.to_users_response(referrals)
+
 
 async def serve() -> None:
     service_provider = Provider(scope=Scope.REQUEST)
@@ -114,7 +148,7 @@ async def serve() -> None:
     logfire.instrument_sqlalchemy(engine=(await container.get(AsyncEngine)).sync_engine)
     logfire.instrument_asyncpg()
 
-    server = grpc.aio.server(interceptors=[DishkaAioInterceptor(container)])
+    server = grpc.aio.server(interceptors=[DishkaAioInterceptor(container), AsyncExceptionToStatusInterceptor()])
     user_pb2_grpc.add_UserServicer_to_server(UserServicer(), server)
     _health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
     listen_addr = "[::]:50051"

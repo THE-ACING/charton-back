@@ -54,6 +54,16 @@ class UserStub(object):
                 request_serializer=services_dot_user_dot_user__pb2.UsersRequest.SerializeToString,
                 response_deserializer=services_dot_user_dot_user__pb2.UsersResponse.FromString,
                 _registered_method=True)
+        self.BindReferrer = channel.unary_unary(
+                '/user.User/BindReferrer',
+                request_serializer=services_dot_user_dot_user__pb2.BindReferrerRequest.SerializeToString,
+                response_deserializer=services_dot_user_dot_user__pb2.BindReferrerResponse.FromString,
+                _registered_method=True)
+        self.GetReferrals = channel.unary_unary(
+                '/user.User/GetReferrals',
+                request_serializer=services_dot_user_dot_user__pb2.ReferralsRequest.SerializeToString,
+                response_deserializer=services_dot_user_dot_user__pb2.UsersResponse.FromString,
+                _registered_method=True)
 
 
 class UserServicer(object):
@@ -83,6 +93,18 @@ class UserServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def BindReferrer(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetReferrals(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UserServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -104,6 +126,16 @@ def add_UserServicer_to_server(servicer, server):
             'GetUsers': grpc.unary_unary_rpc_method_handler(
                     servicer.GetUsers,
                     request_deserializer=services_dot_user_dot_user__pb2.UsersRequest.FromString,
+                    response_serializer=services_dot_user_dot_user__pb2.UsersResponse.SerializeToString,
+            ),
+            'BindReferrer': grpc.unary_unary_rpc_method_handler(
+                    servicer.BindReferrer,
+                    request_deserializer=services_dot_user_dot_user__pb2.BindReferrerRequest.FromString,
+                    response_serializer=services_dot_user_dot_user__pb2.BindReferrerResponse.SerializeToString,
+            ),
+            'GetReferrals': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetReferrals,
+                    request_deserializer=services_dot_user_dot_user__pb2.ReferralsRequest.FromString,
                     response_serializer=services_dot_user_dot_user__pb2.UsersResponse.SerializeToString,
             ),
     }
@@ -214,6 +246,60 @@ class User(object):
             target,
             '/user.User/GetUsers',
             services_dot_user_dot_user__pb2.UsersRequest.SerializeToString,
+            services_dot_user_dot_user__pb2.UsersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def BindReferrer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/user.User/BindReferrer',
+            services_dot_user_dot_user__pb2.BindReferrerRequest.SerializeToString,
+            services_dot_user_dot_user__pb2.BindReferrerResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetReferrals(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/user.User/GetReferrals',
+            services_dot_user_dot_user__pb2.ReferralsRequest.SerializeToString,
             services_dot_user_dot_user__pb2.UsersResponse.FromString,
             options,
             channel_credentials,

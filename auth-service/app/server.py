@@ -8,6 +8,7 @@ from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, GrpcioProvider, DishkaAioInterceptor
 from grpc_health.v1 import health
 from grpc_health.v1._async import _health_pb2_grpc  # noqa
+from grpc_interceptor import AsyncExceptionToStatusInterceptor
 from grpc_interceptor.exceptions import Unauthenticated
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -76,7 +77,8 @@ async def serve() -> None:
 
     server = grpc.aio.server(
         interceptors=[
-            DishkaAioInterceptor(container)
+            DishkaAioInterceptor(container),
+            AsyncExceptionToStatusInterceptor()
         ]
     )
     auth_pb2_grpc.add_AuthServicer_to_server(AuthServicer(), server)

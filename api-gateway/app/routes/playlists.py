@@ -9,7 +9,7 @@ from app.auth import get_user
 from app.schemas.author import Author
 from app.schemas.playlist import Playlist, CreatePlaylist, PlaylistWithTracks, Playlists
 from app.schemas.tracks import Track
-from app.schemas.user import User
+from services.auth import auth_pb2
 from services.playlist import playlist_pb2, playlist_pb2_grpc
 from services.track import track_pb2_grpc, track_pb2
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/playlists", tags=["playlists"], route_class=DishkaRo
 @router.post("/", response_model=Playlist)
 async def create_playlist(
         request: CreatePlaylist,
-        user: Annotated[User, Depends(get_user)],
+        user: Annotated[auth_pb2.UserResponse, Depends(get_user)],
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
 ) -> playlist_pb2.PlaylistResponse:
     return await playlist_service.CreatePlaylist(
@@ -59,7 +59,7 @@ async def get_playlist(
 async def update_playlist(
         playlist_id: UUID,
         request: CreatePlaylist,
-        user: Annotated[User, Depends(get_user)],
+        user: Annotated[auth_pb2.UserResponse, Depends(get_user)],
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
 ):
     return await playlist_service.UpdatePlaylist(
@@ -75,7 +75,7 @@ async def update_playlist(
 @router.delete("/{playlist_id}", response_model=Playlist)
 async def remove_playlist(
         playlist_id: UUID,
-        user: Annotated[User, Depends(get_user)],
+        user: Annotated[auth_pb2.UserResponse, Depends(get_user)],
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
 ):
     return await playlist_service.RemovePlaylist(
@@ -88,7 +88,7 @@ async def remove_playlist(
 async def add_track_to_playlist(
         playlist_id: UUID,
         request: Track,
-        user: Annotated[User, Depends(get_user)],
+        user: Annotated[auth_pb2.UserResponse, Depends(get_user)],
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
 ):
     return await playlist_service.AddTrackToPlaylist(
@@ -104,7 +104,7 @@ async def add_track_to_playlist(
 async def remove_track_from_playlist(
         playlist_id: UUID,
         track_id: UUID,
-        user: Annotated[User, Depends(get_user)],
+        user: Annotated[auth_pb2.UserResponse, Depends(get_user)],
         playlist_service: FromDishka[playlist_pb2_grpc.PlaylistStub],
 ):
     return await playlist_service.RemoveTrackFromPlaylist(

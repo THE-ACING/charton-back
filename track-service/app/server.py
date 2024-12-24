@@ -8,6 +8,7 @@ from aiokafka import AIOKafkaProducer
 from dishka import FromDishka, make_async_container, Provider, Scope
 from dishka.integrations.grpcio import inject, GrpcioProvider, DishkaAioInterceptor
 from elasticsearch import AsyncElasticsearch
+from grpc_interceptor import AsyncExceptionToStatusInterceptor
 from grpc_interceptor.exceptions import NotFound
 from grpc_health.v1 import health
 from grpc_health.v1._async import _health_pb2_grpc # noqa
@@ -210,7 +211,8 @@ async def serve() -> None:
 
     server = grpc.aio.server(
         interceptors=[
-            DishkaAioInterceptor(container)
+            DishkaAioInterceptor(container),
+            AsyncExceptionToStatusInterceptor()
         ]
     )
     track_pb2_grpc.add_TrackServicer_to_server(TrackServicer(), server)

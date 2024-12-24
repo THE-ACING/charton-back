@@ -1,4 +1,3 @@
-import grpc
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
@@ -21,6 +20,6 @@ def create_app():
     app.include_router(users_router)
     app.include_router(playlists_router)
 
-    app.add_exception_handler(grpc.RpcError, grpc_exception_handler)
+    app.add_exception_handler(Exception, grpc_exception_handler)
 
     return app
