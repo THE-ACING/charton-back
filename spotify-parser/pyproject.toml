@@ -29,10 +29,26 @@ build-backend = "hatchling.build"
 [tool.rye]
 virtual = true
 managed = true
-dev-dependencies = []
+dev-dependencies = [
+    "ruff>=0.8.4",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "C901",  # too complex
+]
