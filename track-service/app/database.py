@@ -18,7 +18,10 @@ class DatabaseProvider(Provider):
                 host=settings.POSTGRES_HOST,
                 port=settings.POSTGRES_PORT,
                 database=settings.POSTGRES_DB,
-            )
+            ),
+            connect_args={"server_settings": {"jit": "off"}},
+            echo=True,
+            echo_pool='debug'
         )
 
     @provide(scope=Scope.APP)
@@ -29,4 +32,7 @@ class DatabaseProvider(Provider):
     async def get_session(self, sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncIterable[AsyncSession]:
         async with sessionmaker() as session:
             async with session.begin():
-                yield session
+                try:
+                    yield session
+                except Exception as _:
+                    await session.rollback()

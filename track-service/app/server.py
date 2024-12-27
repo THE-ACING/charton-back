@@ -108,12 +108,12 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
             producer: FromDishka[AIOKafkaProducer],
             track_repository: FromDishka[TrackRepository]
     ) -> track_pb2.TracksResponse:
-        await producer.send(
+        asyncio.create_task(producer.send(
             settings.PARSER_KAFKA_TOPIC,
             value={
                 "query": request.query
             }
-        )
+        ))
         resp = await track_elasticsearch_repository.search(request.query, request.offset, request.limit)
         track_ids_order = {UUID(hit["_id"]): index for index, hit in enumerate(resp["hits"]["hits"])}
 
@@ -166,6 +166,9 @@ async def serve() -> None:
     logfire.configure(service_name="track-service")
 
     logging.basicConfig(level=logging.INFO, handlers=[logfire.LogfireLoggingHandler()])
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.pool").setLevel(logging.DEBUG)
+
     logfire.instrument_sqlalchemy(engine=(await container.get(AsyncEngine)).sync_engine)
     logfire.instrument_asyncpg()
 
