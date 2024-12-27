@@ -16,11 +16,7 @@ dependencies = [
     "dishka>=1.4.1",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires-python = ">= 3.10"
 
 [tool.rye]
 virtual = true
@@ -30,12 +26,6 @@ dev-dependencies = [
     "mypy>=1.14.0",
     "types-protobuf>=5.29.1.20241207",
 ]
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/api_gateway"]
 
 [tool.lint]
 select = [

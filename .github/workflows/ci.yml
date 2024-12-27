@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - playlist-service
+          - spotify-parser
+          - track-service
+          - user-service
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v4
+      -
+        name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          path: '${{ matrix.service }}'
+      -
+        name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "${{ matrix.service }}/requirements**.lock"
+          python-version: "3.12"
+#      -
+#        name: Install Venv
+#        run: uv venv
+      -
+        name: Install the project
+        working-directory: ${{ matrix.service }}
+        run: uv pip install -r requirements-dev.lock
+      -
+        name: Ruff check
+        uses: astral-sh/ruff-action@v2
+        with:
+          src: "./${{ matrix.service }}/app"
+#      -
+#        name: Run tests
+#        run: uv run pytest ${{ matrix.service }}/tests
