@@ -27,6 +27,8 @@ virtual = true
 managed = true
 dev-dependencies = [
     "ruff>=0.8.4",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.0",
 ]
 
 [tool.lint]
@@ -42,3 +44,6 @@ ignore = [
     "E501",  # line too long, handled by black
     "C901",  # too complex
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

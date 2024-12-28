@@ -32,6 +32,8 @@ certifi==2024.12.14
     # via requests
 charset-normalizer==3.4.0
     # via requests
+colorama==0.4.6
+    # via pytest
 deprecated==1.2.15
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-http
@@ -58,6 +60,8 @@ idna==3.10
     # via yarl
 importlib-metadata==8.5.0
     # via opentelemetry-api
+iniconfig==2.0.0
+    # via pytest
 logfire==2.7.1
 logfury==1.0.1
     # via b2sdk
@@ -107,6 +111,9 @@ opentelemetry-semantic-conventions==0.50b0
 packaging==24.2
     # via opentelemetry-instrumentation
     # via opentelemetry-instrumentation-sqlalchemy
+    # via pytest
+pluggy==1.5.0
+    # via pytest
 propcache==0.2.1
     # via yarl
 protobuf==5.29.1
@@ -123,6 +130,9 @@ pydantic-core==2.23.4
 pydantic-settings==2.7.0
 pygments==2.18.0
     # via rich
+pytest==8.3.4
+    # via pytest-asyncio
+pytest-asyncio==0.25.0
 python-dotenv==1.0.1
     # via pydantic-settings
 requests==2.32.3

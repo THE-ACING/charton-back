@@ -8,6 +8,7 @@ from grpc_interceptor.exceptions import NotFound
 from dishka.integrations import grpcio
 
 from app.models import User
+from services.playlist.playlist_pb2_grpc import PlaylistStub
 from services.user import user_pb2
 from app.repositories.user import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,16 +39,21 @@ def user_servicer(monkeypatch, session, user_repository):
 
 
 @pytest.fixture
+def playlist_service():
+    return AsyncMock(spec=PlaylistStub)
+
+
+@pytest.fixture
 def context():
     return AsyncMock(spec=grpc.aio.ServicerContext)
 
 
 @pytest.mark.asyncio
-async def test_create_user(user_servicer, user_repository, session, context):
+async def test_create_user(user_servicer, user_repository, session, context, playlist_service):
     mock_user = User(id=uuid4())
     user_repository.create.return_value = mock_user
 
-    response = await user_servicer.CreateUser(user_pb2.CreateUserRequest(), context, user_repository, session)
+    response = await user_servicer.CreateUser(user_pb2.CreateUserRequest(), context, user_repository, playlist_service, session)
 
     session.commit.assert_called_once()
     assert response.id == str(mock_user.id)

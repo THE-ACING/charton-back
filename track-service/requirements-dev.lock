@@ -131,6 +131,8 @@ pygments==2.18.0
     # via rich
 pyright==1.1.388
 pytest==8.3.4
+    # via pytest-asyncio
+pytest-asyncio==0.25.0
 python-dotenv==1.0.1
     # via pydantic-settings
 requests==2.32.3

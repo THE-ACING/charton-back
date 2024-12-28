@@ -42,3 +42,6 @@ ignore = [
     "E501",  # line too long, handled by black
     "C901",  # too complex
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
