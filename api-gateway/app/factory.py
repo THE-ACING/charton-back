@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
+from grpc.aio import AioRpcError
 
 from app.routes.error import grpc_exception_handler
 from app.routes.tracks import router as tracks_router
@@ -20,6 +21,6 @@ def create_app():
     app.include_router(users_router)
     app.include_router(playlists_router)
 
-    app.add_exception_handler(Exception, grpc_exception_handler)
+    app.add_exception_handler(AioRpcError, grpc_exception_handler)
 
     return app

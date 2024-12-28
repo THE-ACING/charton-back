@@ -23,6 +23,7 @@ click==8.1.7
     # via uvicorn
 colorama==0.4.6
     # via click
+    # via pytest
 deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-http
@@ -45,6 +46,8 @@ idna==3.10
     # via requests
 importlib-metadata==8.5.0
     # via opentelemetry-api
+iniconfig==2.0.0
+    # via pytest
 logfire==2.3.0
 markdown-it-py==3.0.0
     # via rich
@@ -85,6 +88,9 @@ opentelemetry-util-http==0.49b1
     # via opentelemetry-instrumentation-fastapi
 packaging==24.2
     # via opentelemetry-instrumentation
+    # via pytest
+pluggy==1.5.0
+    # via pytest
 protobuf==5.28.3
     # via googleapis-common-protos
     # via grpcio-tools
@@ -98,6 +104,9 @@ pydantic-core==2.23.4
 pydantic-settings==2.6.1
 pygments==2.18.0
     # via rich
+pytest==8.3.4
+    # via pytest-asyncio
+pytest-asyncio==0.25.0
 python-dotenv==1.0.1
     # via pydantic-settings
 requests==2.32.3

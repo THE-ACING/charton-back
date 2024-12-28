@@ -12,7 +12,7 @@ from services.auth import auth_pb2
 from services.playlist import playlist_pb2_grpc, playlist_pb2
 from services.user import user_pb2_grpc, user_pb2
 
-router = APIRouter(prefix="/user", tags=["user"], route_class=DishkaRoute)
+router = APIRouter(prefix="/users", tags=["user"], route_class=DishkaRoute)
 
 
 @router.get("/{user_id}", response_model=User)
