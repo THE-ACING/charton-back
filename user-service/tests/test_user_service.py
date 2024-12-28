@@ -8,7 +8,7 @@ from grpc_interceptor.exceptions import NotFound
 from dishka.integrations import grpcio
 
 from app.models import User
-from services.playlist.playlist_pb2_grpc import PlaylistStub
+from services.playlist.playlist_pb2_grpc import Playlist
 from services.user import user_pb2
 from app.repositories.user import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,7 +40,9 @@ def user_servicer(monkeypatch, session, user_repository):
 
 @pytest.fixture
 def playlist_service():
-    return AsyncMock(spec=PlaylistStub)
+    playlist_service = AsyncMock(spec=Playlist)
+    playlist_service.CreatePlaylist = AsyncMock()
+    return playlist_service
 
 
 @pytest.fixture
