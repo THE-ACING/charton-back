@@ -18,7 +18,8 @@ class DatabaseProvider(Provider):
                 host=settings.POSTGRES_HOST,
                 port=settings.POSTGRES_PORT,
                 database=settings.POSTGRES_DB,
-            )
+            ),
+            pool_pre_ping=True
         )
 
     @provide(scope=Scope.APP)

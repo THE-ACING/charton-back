@@ -11,6 +11,7 @@ engine = create_engine(
         host=settings.POSTGRES_HOST,
         port=settings.POSTGRES_PORT,
         database=settings.POSTGRES_DB,
-    )
+    ),
+    pool_pre_ping=True
 )
 session_maker = sessionmaker(engine, expire_on_commit=False, autoflush=False)

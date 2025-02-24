@@ -21,7 +21,8 @@ class DatabaseProvider(Provider):
             ),
             connect_args={"server_settings": {"jit": "off"}},
             echo=True,
-            echo_pool='debug'
+            echo_pool='debug',
+            pool_pre_ping=True
         )
 
     @provide(scope=Scope.APP)
