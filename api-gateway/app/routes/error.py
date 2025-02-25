@@ -1,3 +1,4 @@
+import logfire
 from grpc import StatusCode
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -5,6 +6,7 @@ from grpc.aio import AioRpcError
 
 
 def grpc_exception_handler(request: Request, exc: AioRpcError) -> JSONResponse:
+    logfire.error(exc.details())
     match exc.code():
         case StatusCode.NOT_FOUND:
             return JSONResponse(
